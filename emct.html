@@ -1,0 +1,2178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EMCT – Efficiency Management and Coaching Tool</title>
+    <style>
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif; background:#eef0f5; color:#333; min-height:100vh; }
+
+        .header {
+            background:linear-gradient(135deg,#4B0082 0%,#8B008B 60%,#6B238E 100%);
+            color:white; padding:14px 30px;
+            display:flex; align-items:center; justify-content:center;
+            box-shadow:0 3px 10px rgba(0,0,0,0.25);
+            position:sticky; top:0; z-index:100;
+        }
+        .header-inner { max-width:1300px; width:100%; display:flex; align-items:center; justify-content:space-between; gap:20px; }
+        .header-logos { display:flex; gap:10px; align-items:center; flex-shrink:0; }
+        .logo-pill { padding:5px 16px; border-radius:20px; font-weight:700; font-size:13px; background:white; }
+        .logo-pill.telus { color:#4B0082; }
+        .logo-pill.fox   { color:#8B008B; }
+        .header-title { text-align:center; flex:1; }
+        .header-title h1 { font-size:1.15em; font-weight:700; letter-spacing:0.3px; }
+        .header-title p  { font-size:0.72em; opacity:0.85; margin-top:2px; }
+
+        .tabbar-wrap { background:#2c3e50; display:flex; justify-content:center; position:sticky; top:60px; z-index:99; box-shadow:0 2px 6px rgba(0,0,0,0.2); }
+        .tabbar { display:flex; max-width:1300px; width:100%; overflow-x:auto; }
+        .tabbar::-webkit-scrollbar { height:3px; }
+        .tabbar::-webkit-scrollbar-thumb { background:#4B0082; }
+        .tab-btn { padding:11px 20px; color:#bbb; border:none; background:none; cursor:pointer; font-size:12px; font-weight:600; white-space:nowrap; border-bottom:3px solid transparent; transition:all 0.25s; flex:1; text-align:center; }
+        .tab-btn:hover { color:white; background:rgba(255,255,255,0.06); }
+        .tab-btn.active { color:#FFD700; border-bottom-color:#FFD700; background:rgba(75,0,130,0.35); }
+
+        .page-wrap { display:flex; justify-content:center; padding:20px 16px 40px; }
+        .page-inner { max-width:1300px; width:100%; }
+
+        .panel { display:none; }
+        .panel.active { display:block; }
+
+        .sec-title { font-size:16px; font-weight:700; color:#4B0082; margin-bottom:16px; padding-bottom:8px; border-bottom:2px solid #8B008B; display:flex; align-items:center; gap:8px; }
+
+        .card { background:white; border-radius:10px; padding:18px; margin-bottom:14px; box-shadow:0 2px 8px rgba(0,0,0,0.07); border:1px solid #e8e8e8; }
+        .card-title { color:#4B0082; font-size:13px; font-weight:700; margin-bottom:12px; padding-bottom:8px; border-bottom:2px solid #e8e8e8; }
+
+        .g2 { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+        .g3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+        .g4 { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+
+        .kpi { border-radius:10px; padding:16px 12px; text-align:center; color:white; box-shadow:0 3px 8px rgba(0,0,0,0.12); }
+        .kpi h4 { font-size:11px; opacity:0.88; margin-bottom:6px; line-height:1.3; }
+        .kpi .kv { font-size:30px; font-weight:700; line-height:1; }
+        .kpi small { font-size:10px; opacity:0.8; display:block; margin-top:4px; }
+        .kpi-purple { background:linear-gradient(135deg,#4B0082,#8B008B); }
+        .kpi-blue   { background:linear-gradient(135deg,#1565C0,#1976D2); }
+        .kpi-violet { background:linear-gradient(135deg,#6A1B9A,#8B008B); }
+        .kpi-teal   { background:linear-gradient(135deg,#00695C,#00897B); }
+        .kpi-grey   { background:linear-gradient(135deg,#7f8c8d,#95a5a6); }
+        .kpi-orange { background:linear-gradient(135deg,#e67e22,#f39c12); }
+        .kpi-green  { background:linear-gradient(135deg,#27ae60,#2ecc71); }
+
+        .badge { padding:3px 9px; border-radius:12px; font-size:10px; font-weight:700; display:inline-block; white-space:nowrap; }
+        .b-green  { background:#27ae60; color:white; }
+        .b-blue   { background:#2980b9; color:white; }
+        .b-teal   { background:#17a2b8; color:white; }
+        .b-orange { background:#e67e22; color:white; }
+        .b-red    { background:#e74c3c; color:white; }
+        .b-grey   { background:#95a5a6; color:white; }
+        .b-silver { background:#bdc3c7; color:#444; }
+        .b-purple { background:#4B0082; color:white; }
+
+        .btn { display:inline-flex; align-items:center; gap:5px; padding:8px 16px; border:none; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; transition:all 0.2s; text-decoration:none; }
+        .btn:hover { opacity:0.87; transform:translateY(-1px); box-shadow:0 3px 8px rgba(0,0,0,0.15); }
+        .btn-primary   { background:linear-gradient(135deg,#4B0082,#8B008B); color:white; }
+        .btn-success   { background:linear-gradient(135deg,#27ae60,#2ecc71); color:white; }
+        .btn-warning   { background:linear-gradient(135deg,#e67e22,#f39c12); color:white; }
+        .btn-info      { background:linear-gradient(135deg,#2980b9,#3498db); color:white; }
+        .btn-secondary { background:linear-gradient(135deg,#2c3e50,#34495e); color:white; }
+        .btn-sm { padding:5px 11px; font-size:11px; }
+
+        .form-row { display:grid; gap:10px; margin-bottom:10px; }
+        .form-row.c1 { grid-template-columns:1fr; }
+        .form-row.c2 { grid-template-columns:1fr 1fr; }
+        .form-row.c3 { grid-template-columns:1fr 1fr 1fr; }
+        .form-row.c4 { grid-template-columns:repeat(4,1fr); }
+        .fg { display:flex; flex-direction:column; gap:4px; }
+        .fg label { font-size:11px; font-weight:700; color:#4B0082; }
+        .fg input, .fg select, .fg textarea { padding:8px 10px; border:1.5px solid #ddd; border-radius:6px; font-size:12px; font-family:inherit; transition:border-color 0.2s; }
+        .fg input:focus, .fg select:focus, .fg textarea:focus { outline:none; border-color:#4B0082; box-shadow:0 0 0 3px rgba(75,0,130,0.1); }
+        .fg small { font-size:10px; color:#777; }
+
+        .empid-badge { background:linear-gradient(135deg,#4B0082,#6B238E); color:white; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:700; font-family:'Courier New',monospace; letter-spacing:0.5px; }
+        .empid-field { border-color:#4B0082 !important; background:#faf7ff !important; }
+
+        .box { padding:11px 14px; border-radius:6px; margin:8px 0; font-size:12px; line-height:1.7; }
+        .box-info    { background:#d1ecf1; border-left:4px solid #17a2b8; }
+        .box-success { background:#d4edda; border-left:4px solid #28a745; }
+        .box-warning { background:#fff3cd; border-left:4px solid #ffc107; }
+        .box-danger  { background:#fde8e8; border-left:4px solid #e74c3c; }
+        .box-blue    { background:#e3f2fd; border-left:4px solid #1565C0; }
+        .box-violet  { background:#f3e5f5; border-left:4px solid #6A1B9A; }
+        .box-smart   { background:#fff8e1; border-left:4px solid #ffc107; }
+        .box-example { background:#e7f3ff; border-left:4px solid #2196F3; }
+        .box-green   { background:#e8f5e9; border:2px solid #27ae60; border-radius:8px; }
+
+        .tbl-wrap { overflow-x:auto; border-radius:8px; }
+        .tbl { width:100%; border-collapse:collapse; font-size:12px; }
+        .tbl th { background:linear-gradient(135deg,#4B0082,#8B008B); color:white; padding:9px 12px; text-align:left; font-size:11px; font-weight:600; }
+        .tbl th:first-child { border-radius:6px 0 0 0; }
+        .tbl th:last-child  { border-radius:0 6px 0 0; }
+        .tbl td { padding:8px 12px; border-bottom:1px solid #f0f0f0; }
+        .tbl tr:hover td { background:#fafafa; }
+        .tbl tr:last-child td { border-bottom:none; }
+        .tbl-input { width:68px; padding:4px 6px; border:1.5px solid #ddd; border-radius:4px; font-size:11px; text-align:center; }
+
+        .prog { width:100%; height:14px; background:#e8e8e8; border-radius:7px; overflow:hidden; }
+        .prog-fill { height:100%; display:flex; align-items:center; justify-content:center; color:white; font-size:9px; font-weight:700; border-radius:7px; transition:width 0.4s; }
+        .prog-blue   { background:linear-gradient(90deg,#1565C0,#1976D2); }
+        .prog-violet { background:linear-gradient(90deg,#6A1B9A,#8B008B); }
+
+        .aht-head { display:flex; align-items:center; gap:10px; margin:16px 0 10px; }
+        .aht-pill-blue   { background:#1565C0; color:white; padding:4px 14px; border-radius:12px; font-size:11px; font-weight:700; }
+        .aht-pill-violet { background:#6A1B9A; color:white; padding:4px 14px; border-radius:12px; font-size:11px; font-weight:700; }
+        .aht-divider { border:none; border-top:2px dashed #ddd; margin:20px 0; }
+
+        .timeline { position:relative; padding-left:24px; }
+        .timeline::before { content:''; position:absolute; left:0; top:0; bottom:0; width:2px; background:linear-gradient(to bottom,#4B0082,#8B008B); border-radius:2px; }
+        .tl-item { position:relative; margin-bottom:16px; padding-left:16px; }
+        .tl-item::before { content:''; position:absolute; left:-30px; top:6px; width:10px; height:10px; border-radius:50%; background:#4B0082; border:2px solid white; box-shadow:0 0 0 2px #4B0082; }
+        .session-card { background:white; border:1.5px solid #e0d0f0; border-radius:10px; padding:16px; box-shadow:0 2px 8px rgba(75,0,130,0.08); }
+        .session-hdr { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:12px; padding-bottom:10px; border-bottom:1px solid #f0f0f0; flex-wrap:wrap; gap:8px; }
+        .metrics-strip { background:#f8f9fa; padding:9px 13px; border-radius:6px; font-size:11px; margin-top:10px; line-height:2; }
+        .coaching-note { background:#f8f9fa; padding:9px 12px; margin:8px 0; border-radius:6px; border-left:3px solid #4B0082; font-size:12px; }
+
+        .ack-panel { background:#f0f4ff; border:1.5px solid #3498db; border-radius:8px; padding:12px; margin-top:12px; }
+        .ack-panel h6 { color:#2980b9; font-size:12px; margin-bottom:6px; font-weight:700; }
+        .ack-trail { font-size:11px; color:#555; margin-top:6px; }
+        .trail-item { display:block; background:#eaf4fb; border:1px solid #aed6f1; border-radius:4px; padding:4px 10px; margin:3px 0; }
+        .ack-badge-row { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin-top:8px; }
+
+        .ack-card { background:white; border:1px solid #e8e8e8; border-radius:8px; padding:14px 18px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; box-shadow:0 1px 4px rgba(0,0,0,0.05); transition:box-shadow 0.2s; }
+        .ack-card:hover { box-shadow:0 3px 10px rgba(0,0,0,0.1); }
+
+        .ack-widgets { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-top:12px; }
+
+        .filter-bar { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:14px; align-items:center; }
+        .filter-bar select, .filter-bar input { padding:7px 11px; border:1.5px solid #ddd; border-radius:6px; font-size:12px; font-family:inherit; }
+        .filter-bar select:focus, .filter-bar input:focus { outline:none; border-color:#4B0082; }
+
+        .ndot { display:inline-block; width:7px; height:7px; background:#e74c3c; border-radius:50%; margin-left:4px; vertical-align:middle; animation:pulse 1.5s infinite; }
+        @keyframes pulse { 0%,100%{transform:scale(1);opacity:1;} 50%{transform:scale(1.5);opacity:0.6;} }
+
+        .week-nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; background:#f8f9fa; padding:10px 16px; border-radius:8px; border:1px solid #e0e0e0; }
+        .week-btn { background:linear-gradient(135deg,#4B0082,#8B008B); color:white; border:none; padding:7px 16px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:600; transition:opacity 0.2s; }
+        .week-btn:hover { opacity:0.85; }
+        .week-lbl { font-size:14px; font-weight:700; color:#4B0082; }
+
+        .agent-sel { background:linear-gradient(135deg,#4B0082,#8B008B); padding:14px 16px; border-radius:10px; margin-bottom:14px; }
+        .agent-sel label { color:white; font-size:12px; font-weight:700; display:block; margin-bottom:6px; }
+        .agent-sel select { font-size:13px; padding:9px 12px; width:100%; border-radius:6px; border:none; font-family:inherit; }
+
+        .stats-disp { background:linear-gradient(135deg,#667eea,#764ba2); color:white; padding:16px; border-radius:10px; margin-bottom:14px; box-shadow:0 3px 10px rgba(102,126,234,0.3); }
+        .stats-disp h4 { font-size:13px; margin-bottom:12px; opacity:0.95; }
+        .stats-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(100px,1fr)); gap:8px; }
+        .stat-box { padding:10px 8px; border-radius:7px; text-align:center; }
+        .stat-box h5 { font-size:10px; opacity:0.88; margin-bottom:4px; }
+        .stat-box .sv { font-size:18px; font-weight:700; }
+        .sb-blue   { background:rgba(21,101,192,0.4); }
+        .sb-violet { background:rgba(106,27,154,0.4); }
+        .sb-white  { background:rgba(255,255,255,0.18); }
+        .sb-id     { background:rgba(75,0,130,0.5); }
+
+        .compare { background:#f8f9fa; padding:12px 14px; border-radius:8px; margin:10px 0; border:1px solid #eee; }
+        .cmp-row { display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee; font-size:12px; }
+        .cmp-row:last-child { border-bottom:none; }
+        .c-lbl { font-weight:700; color:#4B0082; }
+        .c-up { color:#27ae60; font-weight:700; }
+        .c-dn { color:#e74c3c; font-weight:700; }
+        .c-eq { color:#95a5a6; font-weight:700; }
+
+        .modal { display:none; position:fixed; z-index:2000; inset:0; background:rgba(0,0,0,0.6); overflow-y:auto; padding:30px 16px; }
+        .modal.open { display:flex; align-items:flex-start; justify-content:center; }
+        .modal-box { background:white; border-radius:12px; width:100%; max-width:800px; padding:26px; box-shadow:0 10px 40px rgba(0,0,0,0.3); margin:auto; }
+        .modal-hdr { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; padding-bottom:12px; border-bottom:2px solid #f0f0f0; }
+        .modal-hdr h2 { color:#4B0082; font-size:16px; }
+        .modal-close { background:none; border:none; font-size:24px; cursor:pointer; color:#aaa; line-height:1; padding:0 4px; }
+        .modal-close:hover { color:#333; }
+
+        .email-meta { background:#f8f9fa; border:1px solid #e0e0e0; border-radius:8px; padding:12px 16px; margin-bottom:12px; }
+        .email-meta-row { display:flex; gap:10px; margin-bottom:5px; font-size:12px; }
+        .email-meta-row .lbl { font-weight:700; color:#4B0082; min-width:60px; flex-shrink:0; }
+        .email-preview { background:#f8f9fa; border:1px solid #e0e0e0; border-radius:8px; padding:14px; font-size:11px; line-height:1.9; white-space:pre-wrap; font-family:'Courier New',monospace; max-height:220px; overflow-y:auto; }
+        .email-notice { background:#fff8e1; border:1px solid #ffc107; border-radius:6px; padding:8px 12px; font-size:11px; color:#7d5a00; margin:6px 0; }
+
+        .copy-banner { display:none; background:linear-gradient(135deg,#27ae60,#2ecc71); color:white; padding:11px 16px; border-radius:8px; text-align:center; font-weight:700; font-size:12px; margin:8px 0; box-shadow:0 3px 8px rgba(39,174,96,0.3); }
+        .copy-banner.show { display:block; }
+
+        .step-box { background:#f8f9fa; border:1.5px solid #4B0082; border-radius:10px; padding:14px 16px; margin-bottom:14px; }
+        .step-box .step { display:flex; align-items:flex-start; gap:12px; margin-bottom:10px; font-size:12px; line-height:1.6; }
+        .step-box .step:last-child { margin-bottom:0; }
+        .step-num { background:linear-gradient(135deg,#4B0082,#8B008B); color:white; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:700; font-size:11px; flex-shrink:0; }
+
+        .ack-confirm { background:#d4edda; border:2px solid #28a745; border-radius:8px; padding:14px; margin-bottom:14px; font-size:12px; line-height:1.9; }
+        .doc-preview { background:#f8f9fa; border:1px solid #e0e0e0; border-radius:8px; padding:14px; margin-bottom:14px; font-size:12px; line-height:1.8; }
+
+        .del-btn { background:linear-gradient(135deg,#c0392b,#e74c3c); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:11px; font-weight:600; transition:opacity 0.2s; }
+        .del-btn:hover { opacity:0.85; }
+
+        .empty-state { text-align:center; color:#aaa; padding:30px; font-size:13px; }
+
+        /* Search highlight */
+        .search-match { background:#fff3cd; border-radius:3px; padding:0 2px; }
+
+        /* Coaching Strategies Styles */
+        .strategy-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin-bottom:16px; }
+        .strategy-card { background:linear-gradient(135deg,#f8f9fa,#ffffff); border:1.5px solid #e0d0f0; border-radius:10px; padding:16px; box-shadow:0 2px 8px rgba(75,0,130,0.08); transition:all 0.3s; }
+        .strategy-card:hover { transform:translateY(-2px); box-shadow:0 4px 16px rgba(75,0,130,0.15); border-color:#4B0082; }
+        .strategy-card h3 { color:#4B0082; font-size:13px; font-weight:700; margin-bottom:10px; display:flex; align-items:center; gap:6px; }
+        .strategy-card .dont { background:#fde8e8; border-left:3px solid #e74c3c; padding:8px 10px; margin:8px 0; border-radius:4px; font-size:11px; line-height:1.6; }
+        .strategy-card .do { background:#d4edda; border-left:3px solid #28a745; padding:8px 10px; margin:8px 0; border-radius:4px; font-size:11px; line-height:1.6; }
+        .strategy-card .save { color:#27ae60; font-weight:700; font-size:11px; margin-top:6px; }
+        .strategy-card .phase { background:#e3f2fd; color:#1565C0; padding:3px 8px; border-radius:12px; font-size:10px; font-weight:700; display:inline-block; margin-bottom:8px; }
+
+        .technique-list { list-style:none; padding:0; }
+        .technique-list li { padding:8px 0; border-bottom:1px solid #f0f0f0; font-size:12px; line-height:1.6; }
+        .technique-list li:last-child { border-bottom:none; }
+        .technique-list li strong { color:#4B0082; }
+
+        .time-saver { background:#fff8e1; border-left:4px solid #ffc107; padding:10px 12px; margin:8px 0; border-radius:6px; font-size:11px; line-height:1.7; }
+
+        @media(max-width:900px){
+            .g2,.g3,.g4 { grid-template-columns:1fr 1fr; }
+            .form-row.c3,.form-row.c4 { grid-template-columns:1fr 1fr; }
+            .stats-grid { grid-template-columns:repeat(3,1fr); }
+            .ack-widgets { grid-template-columns:1fr 1fr; }
+            .strategy-grid { grid-template-columns:1fr; }
+        }
+        @media(max-width:600px){
+            .g2,.g3,.g4 { grid-template-columns:1fr; }
+            .form-row.c2,.form-row.c3,.form-row.c4 { grid-template-columns:1fr; }
+            .stats-grid { grid-template-columns:repeat(2,1fr); }
+            .ack-widgets { grid-template-columns:1fr; }
+            .header-inner { flex-direction:column; text-align:center; }
+            .tab-btn { font-size:11px; padding:9px 12px; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<div class="header">
+    <div class="header-inner">
+        <div class="header-logos">
+            <div class="logo-pill telus">TELUS Digital</div>
+            <div class="logo-pill fox">Europcar FOX</div>
+        </div>
+        <div class="header-title">
+            <h1>⚡ Efficiency Management and Coaching Tool (EMCT)</h1>
+            <p>Europcar Fox Rent A Car Services &nbsp;|&nbsp; Powered by Telus Digital</p>
+        </div>
+        <div style="width:180px;"></div>
+    </div>
+</div>
+
+<!-- ── TAB BAR ── -->
+<div class="tabbar-wrap">
+    <div class="tabbar">
+        <button class="tab-btn active" onclick="openTab(event,'dashboard')">📊 Dashboard</button>
+        <button class="tab-btn" onclick="openTab(event,'aht-guide')">⏱️ AHT Guide</button>
+        <button class="tab-btn" onclick="openTab(event,'strategies')">🎯 Coaching Strategies</button>
+        <button class="tab-btn" onclick="openTab(event,'tracker')">📈 Coaching Tracker</button>
+        <button class="tab-btn" onclick="openTab(event,'smart')">🎓 SMART Coaching</button>
+        <button class="tab-btn" id="ackTabBtn" onclick="openTab(event,'acknowledgements')">
+            ✅ Acknowledgements<span id="pendingDot" class="ndot" style="display:none;"></span>
+        </button>
+    </div>
+</div>
+
+<!-- ── PAGE CONTENT ── -->
+<div class="page-wrap">
+<div class="page-inner">
+
+<!-- ════════════ DASHBOARD ════════════ -->
+<div id="dashboard" class="panel active">
+    <div class="sec-title">📊 Team Performance Dashboard</div>
+    <div class="g4" style="margin-bottom:14px;">
+        <div class="kpi kpi-blue"><h4>📞 Team Avg GQ AHT</h4><div class="kv" id="dashGQAHT">—</div><small>Target ≤295s | Max 300s</small></div>
+        <div class="kpi kpi-violet"><h4>📋 Team Avg Res AHT</h4><div class="kv" id="dashResAHT">—</div><small>Target ≤340s | Max 370s</small></div>
+        <div class="kpi kpi-purple"><h4>Avg Conversion Rate</h4><div class="kv" id="dashConv">—</div><small>%</small></div>
+        <div class="kpi kpi-teal"><h4>Avg Quality Score</h4><div class="kv" id="dashQual">—</div><small>%</small></div>
+    </div>
+    <div class="g2" style="margin-bottom:14px;">
+        <div class="card" style="border-top:4px solid #1565C0;">
+            <div class="card-title" style="color:#1565C0;">📞 General Questions AHT  Thresholds</div>
+            <div class="box box-blue">🎯 <strong>On Target:</strong> ≤295s &nbsp;|&nbsp; ✅ <strong>Acceptable:</strong> 296–300s &nbsp;|&nbsp; ❌ <strong>Critical:</strong> 301+s</div>
+        </div>
+        <div class="card" style="border-top:4px solid #6A1B9A;">
+            <div class="card-title" style="color:#6A1B9A;">📋 Reservations AHT Thresholds</div>
+            <div class="box box-violet">🌟 240–300s &nbsp;|&nbsp; ✅ 301–340s &nbsp;|&nbsp; ✓ 341–370s &nbsp;|&nbsp; ⚠️ 371–420s &nbsp;|&nbsp; ❌ 421+s</div>
+        </div>
+    </div>
+    <div class="card" style="border-left:4px solid #3498db;margin-bottom:14px;">
+        <div class="card-title">📧 Coaching Document Acknowledgement Overview</div>
+        <div class="box box-green" style="padding:10px 14px;font-size:12px;margin-bottom:10px;">
+            ✅ Click <strong>📧 Prepare &amp; Send Email</strong> → coaching doc copied to clipboard → email client opens with To &amp; Subject pre-filled → paste body (Ctrl+V) → Send → click <strong>✅ Mark as Sent</strong>.
+        </div>
+        <div class="ack-widgets">
+            <div class="kpi kpi-grey"><h4>📄 Not Sent</h4><div class="kv" id="dashNotSent">0</div><small>sessions</small></div>
+            <div class="kpi kpi-orange"><h4>📤 Sent – Awaiting Ack</h4><div class="kv" id="dashSent">0</div><small>sessions</small></div>
+            <div class="kpi kpi-green"><h4>✅ Acknowledged</h4><div class="kv" id="dashAcked">0</div><small>sessions</small></div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">📋 Agent Performance Overview</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+            <input type="text" id="dashSearch" placeholder="🔍 Search by name or Employee ID…" oninput="updateDashboard()" style="max-width:320px;padding:8px 12px;border:1.5px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;">
+        </div>
+        <div id="agentOverview"><div class="empty-state">No agents added yet. Go to <strong>Coaching Tracker</strong> to add agents.</div></div>
+    </div>
+</div>
+
+<!-- ════════════ AHT GUIDE ════════════ -->
+<div id="aht-guide" class="panel">
+    <div class="sec-title">⏱️ Average Handle Time Optimization Guide</div>
+    <div class="aht-head"><span class="aht-pill-blue">📞 General Questions AHT</span><strong style="color:#1565C0;font-size:13px;">Target: 295 seconds (4:55)</strong></div>
+    <div class="card" style="border-top:4px solid #1565C0;">
+        <div class="card-title" style="color:#1565C0;">📊 GQ AHT – Targets & Thresholds</div>
+        <div class="g2">
+            <div class="box box-blue"><strong>🎯 On Target:</strong> ≤295s<br><strong>✅ Acceptable:</strong> 296–300s<br><strong>❌ Critical:</strong> 301+s — coach immediately<br><br><em>GQ calls are shorter by nature. Resolve efficiently without unnecessary hold or over-explanation.</em></div>
+            <div class="box box-example"><strong>Why a Separate GQ Target?</strong><br><br>✅ GQ calls don't involve full booking flows<br>✅ Faster resolution = higher customer satisfaction<br>✅ Frees queue capacity for Reservations<br>✅ Enables more accurate benchmarking</div>
+        </div>
+        <div class="box box-danger">❌ <strong>Critical: 301+s</strong> — Any GQ AHT above 300s requires immediate coaching. Common causes: unnecessary hold, over-explaining, not using quick reference materials.</div>
+    </div>
+    <div class="card" style="border-top:4px solid #1565C0;">
+        <div class="card-title" style="color:#1565C0;">🎯 GQ Call Phase Breakdown — Target: 295 seconds</div>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Phase</th><th>Allocated Time</th><th>Cumulative</th></tr></thead><tbody>
+            <tr><td>1. Opening & Greeting</td><td>20s</td><td>0:20</td></tr>
+            <tr><td>2. Identify Query Type</td><td>20s</td><td>0:40</td></tr>
+            <tr><td>3. Gather Needed Details</td><td>40s</td><td>1:20</td></tr>
+            <tr><td>4. Research / System Check</td><td>60s</td><td>2:20</td></tr>
+            <tr><td>5. Provide Answer / Resolution</td><td>60s</td><td>3:20</td></tr>
+            <tr><td>6. Confirm Understanding</td><td>20s</td><td>3:40</td></tr>
+            <tr><td>7. Close & Wrap-Up</td><td>55s</td><td>4:35</td></tr>
+            <tr style="background:linear-gradient(135deg,#1565C0,#1976D2);color:white;font-weight:700;"><td>TOTAL TARGET</td><td>295s</td><td>4:55</td></tr>
+        </tbody></table></div>
+    </div>
+    <hr class="aht-divider">
+    <div class="aht-head"><span class="aht-pill-violet">📋 Reservations AHT</span><strong style="color:#6A1B9A;font-size:13px;">Target: 340 seconds (5:40)</strong></div>
+    <div class="card" style="border-top:4px solid #6A1B9A;">
+        <div class="card-title" style="color:#6A1B9A;">📊 Reservations AHT – Targets & Thresholds</div>
+        <div class="g2">
+            <div class="box box-violet"><strong>🌟 Exceptional:</strong> 240–300s<br><strong>✅ Excellent:</strong> 301–340s<br><strong>✓ Good:</strong> 341–370s<br><strong>⚠️ Needs Work:</strong> 371–420s<br><strong>❌ Critical:</strong> 421+s</div>
+            <div class="box box-example"><strong>Why AHT Matters:</strong><br><br>✅ More calls = More bookings<br>✅ Shorter waits = Better CX<br>✅ Efficient service = Higher satisfaction<br>✅ Better resource utilization</div>
+        </div>
+    </div>
+    <div class="card" style="border-top:4px solid #6A1B9A;">
+        <div class="card-title" style="color:#6A1B9A;">🎯 Reservations Phase Breakdown — Target: 340 seconds</div>
+        <div class="tbl-wrap"><table class="tbl"><thead><tr><th>Phase</th><th>Allocated Time</th><th>Cumulative</th></tr></thead><tbody>
+            <tr><td>1. Opening</td><td>30s</td><td>0:30</td></tr>
+            <tr><td>2. Needs Assessment</td><td>75s</td><td>1:45</td></tr>
+            <tr><td>3. Requirements & Age</td><td>40s</td><td>2:25</td></tr>
+            <tr><td>4. Rate Presentation</td><td>55s</td><td>3:20</td></tr>
+            <tr><td>5. Add-Ons Integration</td><td>70s</td><td>4:30</td></tr>
+            <tr><td>6. Detail Gathering</td><td>40s</td><td>5:10</td></tr>
+            <tr><td>7. Recap & Close</td><td>30s</td><td>5:40</td></tr>
+            <tr style="background:linear-gradient(135deg,#6A1B9A,#8B008B);color:white;font-weight:700;"><td>TOTAL TARGET</td><td>340s</td><td>5:40</td></tr>
+        </tbody></table></div>
+    </div>
+    <div class="g2">
+        <div class="card">
+            <div class="card-title">🚀 Top 4 Quick Wins</div>
+            <div class="box box-success"><strong>1. Bundle Opening Questions</strong><br>❌ 3 separate (45s) → ✅ 1 combined (20s) — <strong>Saves 25s</strong></div>
+            <div class="box box-success"><strong>2. Assumptive Language</strong><br>❌ "Would you like to book?" → ✅ "Let me lock that in." — <strong>Saves 15s</strong></div>
+            <div class="box box-success"><strong>3. Integrate Add-Ons</strong><br>❌ Separate phase → ✅ Weave into conversation — <strong>Saves 45s</strong></div>
+            <div class="box box-success"><strong>4. Streamline Recap</strong><br>❌ Long confirmation → ✅ Concise bullet points — <strong>Saves 30s</strong></div>
+        </div>
+        <div class="card">
+            <div class="card-title">🚫 Top Time-Wasters</div>
+            <div class="box box-warning">
+                1. Over-explaining (~15s)<br>2. Unnecessary small talk (~30s)<br>3. Repeating information (~10s)<br>
+                4. Confirmation on every detail (~30s)<br>5. Long holds (60–90s)<br>6. Offering declined add-ons again (~45s)<br>
+                7. Reading full T&Cs (60+s)<br>8. Apologizing excessively (~15s)<br>9. "Anything else?" multiple times (~30s)
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════ COACHING STRATEGIES ════════════ -->
+<div id="strategies" class="panel">
+    <div class="sec-title">🎯 Comprehensive Coaching Strategies for Team Leaders</div>
+    
+    <!-- Quick Overview Cards -->
+    <div class="g2" style="margin-bottom:20px;">
+        <div class="card" style="border-top:4px solid #1565C0;">
+            <div class="card-title" style="color:#1565C0;">📞 GQ AHT Coaching Triggers</div>
+            <div class="box box-blue">🟢 ≤295s — On Target<br>🟡 296–300s — Acceptable (monitor)<br>🔴 301+s — <strong>Critical: coach immediately</strong></div>
+            <div class="box box-danger"><strong>❌ GQ 301+s Action Plan:</strong><br>☐ Schedule coaching immediately<br>☐ Listen to calls — find where time is lost<br>☐ Eliminate unnecessary hold & over-explanation<br>☐ Role-play GQ scenarios for speed<br>☐ Shadow a high-performing agent</div>
+        </div>
+        <div class="card" style="border-top:4px solid #6A1B9A;">
+            <div class="card-title" style="color:#6A1B9A;">📋 Reservations AHT Coaching Triggers</div>
+            <div class="box box-violet">🟢 ≤340s — On Target<br>🟡 341–370s — Acceptable<br>🟠 371–420s — Needs Work<br>🔴 421+s — <strong>Critical: coach immediately</strong></div>
+            <div class="box box-danger"><strong>❌ Res 421+s Action Plan:</strong><br>☐ Schedule coaching immediately<br>☐ Listen to 3 longest calls<br>☐ Role-play with focus on structure<br>☐ Shadow a high-performing agent<br>☐ Focus on ONE phase at a time</div>
+        </div>
+    </div>
+
+    <!-- AHT Reduction Techniques -->
+    <div class="card">
+        <div class="card-title">🚀 14 AHT Reduction Techniques from the Guide</div>
+        <div class="strategy-grid">
+            <!-- Technique 1 -->
+            <div class="strategy-card">
+                <h3>🔗 Technique #1: Combine Questions</h3>
+                <span class="phase">PHASE 1: OPENING</span>
+                <div class="dont">
+                    ❌ <strong>DON'T SAY:</strong><br>
+                    "May I have your name?"<br>
+                    [wait]<br>
+                    "Thank you. And which location would you like to pick up from?"<br>
+                    [wait]<br>
+                    "Great. And are you flying in or are you a local renter?"<br>
+                    <strong>Time wasted: 45 seconds</strong>
+                </div>
+                <div class="do">
+                    ✅ <strong>DO SAY:</strong><br>
+                    "May I have your name and pickup location? And are you flying in or local?"<br>
+                    <strong class="save">⏱️ Time saved: 20 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 2 -->
+            <div class="strategy-card">
+                <h3>📦 Technique #2: Bundle Essential Questions</h3>
+                <span class="phase">PHASE 2: NEEDS ASSESSMENT</span>
+                <div class="dont">
+                    ❌ <strong>DON'T ASK ONE AT A TIME:</strong><br>
+                    "What's your pickup date?"<br>
+                    "What time?"<br>
+                    "What's your return date?"<br>
+                    "What time will you return?"<br>
+                    "Same location?"<br>
+                    <strong>Time wasted: 60 seconds</strong>
+                </div>
+                <div class="do">
+                    ✅ <strong>DO SAY:</strong><br>
+                    "What are your pickup and return dates and times? And will you return to the same location?"<br>
+                    <strong class="save">⏱️ Time saved: 30 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 3 -->
+            <div class="strategy-card">
+                <h3>🎯 Technique #3: Strategic Questions = Efficiency</h3>
+                <span class="phase">PHASE 2: NEEDS ASSESSMENT</span>
+                <div class="dont">
+                    ❌ <strong>ASK SEPARATELY:</strong><br>
+                    "Where are you going?"<br>
+                    "Do you need GPS?"<br>
+                    "Do you need PlatePass?"
+                </div>
+                <div class="do">
+                    ✅ <strong>ASK ONCE, UNLOCK MULTIPLE ADD-ONS:</strong><br>
+                    "Where are you headed, and are you familiar with the area?"<br><br>
+                    This ONE question tells you:<br>
+                    - Destination (PlatePass opportunity)<br>
+                    - Familiarity (GPS opportunity)<br>
+                    - Trip type (Protection needs)<br>
+                    <strong class="save">⏱️ Time saved: 45 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 4 -->
+            <div class="strategy-card">
+                <h3>⌨️ Technique #4: Listen & Type Simultaneously</h3>
+                <span class="phase">EFFICIENCY TIP</span>
+                <div class="time-saver">
+                    ⚡ <strong>EFFICIENCY TIP:</strong><br>
+                    ✓ Type customer information WHILE they're speaking<br>
+                    ✓ Don't ask them to repeat unless absolutely necessary<br>
+                    ✓ Use shorthand in notes, clean up during after-call work<br>
+                    <strong class="save">⏱️ Time saved: 30–60 seconds per call</strong>
+                </div>
+            </div>
+
+            <!-- Technique 5 -->
+            <div class="strategy-card">
+                <h3>📋 Technique #5: Batch Requirements</h3>
+                <span class="phase">PHASE 3: REQUIREMENTS & AGE</span>
+                <div class="dont">
+                    ❌ <strong>DON'T SAY SEPARATELY:</strong><br>
+                    "You'll need a credit card."<br>
+                    "You'll also need a driver's license."<br>
+                    "The license needs to be in your name."<br>
+                    "The credit card also needs to be in your name."<br>
+                    "You'll need liability coverage..."<br>
+                    <strong>Time wasted: 50 seconds</strong>
+                </div>
+                <div class="do">
+                    ✅ <strong>DO SAY:</strong><br>
+                    "Quick requirements while I check availability: You'll need a credit card and driver's license in your name, plus state-mandated liability coverage. Are you over 25?"<br>
+                    <strong class="save">⏱️ Time saved: 25 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 6 -->
+            <div class="strategy-card">
+                <h3>🗺️ Technique #6: Nevada Exception - Only When Relevant</h3>
+                <span class="phase">PHASE 3: REQUIREMENTS & AGE</span>
+                <div class="dont">
+                    ❌ <strong>DON'T:</strong><br>
+                    Explain Nevada requirements to EVERY customer
+                </div>
+                <div class="do">
+                    ✅ <strong>DO:</strong><br>
+                    Only mention if customer is actually renting in Nevada<br><br>
+                    "Since you're renting in Nevada, you'll need to show proof of liability coverage at pickup—physical card or digital copy both work."<br>
+                    <strong class="save">⏱️ Time saved: 15 seconds per non-Nevada call</strong>
+                </div>
+            </div>
+
+            <!-- Technique 7 -->
+            <div class="strategy-card">
+                <h3>💰 Technique #7: Prepaid First, Always (No Comparison)</h3>
+                <span class="phase">PHASE 4: RATE PRESENTATION</span>
+                <div class="dont">
+                    ❌ <strong>DON'T SAY:</strong><br>
+                    "We have two options for you today. We have Pay Now at $350 and Pay Later at $425. Pay Now gives you the lowest rate and locks in your reservation, but the link expires in 30 minutes. Pay Later gives you flexibility but costs more. Which would you prefer?"<br>
+                    <strong>Time wasted: 30 seconds + decision paralysis</strong>
+                </div>
+                <div class="do">
+                    ✅ <strong>DO SAY:</strong><br>
+                    "Great! I have a [vehicle] available. Our Prepaid rate is $350—that's our lowest rate and it reserves your car. Most customers choose this. Let me go ahead and reserve this for you?"<br>
+                    <strong class="save">⏱️ Time saved: 20 seconds + increases conversion</strong>
+                </div>
+            </div>
+
+            <!-- Technique 8 -->
+            <div class="strategy-card">
+                <h3>🎯 Technique #8: Assumptive Language = Faster Close</h3>
+                <span class="phase">PHASE 4: RATE PRESENTATION</span>
+                <div class="dont">
+                    ❌ <strong>ASKING CREATES DELAYS:</strong><br>
+                    "Would you like to book this?"<br>
+                    "Does that work for you?"<br>
+                    "What do you think?"<br>
+                    "Are you interested?"
+                </div>
+                <div class="do">
+                    ✅ <strong>ASSUMING MOVES FORWARD:</strong><br>
+                    "Let me lock that in for you"<br>
+                    "I'll go ahead and reserve this"<br>
+                    "Perfect, let me get this booked"<br>
+                    "What email should I send the confirmation to?"<br>
+                    <strong class="save">⏱️ Time saved: 15–30 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 9 -->
+            <div class="strategy-card">
+                <h3>🧩 Technique #9: Integrate Add-Ons During Detail Gathering</h3>
+                <span class="phase">PHASE 5: ADD-ONS</span>
+                <div class="dont">
+                    ❌ <strong>DON'T:</strong><br>
+                    Finish all details, THEN go back and offer add-ons separately
+                </div>
+                <div class="do">
+                    ✅ <strong>DO:</strong><br>
+                    Weave add-ons into the conversation naturally<br><br>
+                    <em>Example:</em> "May I have your email address?"<br>
+                    [Customer provides email]<br>
+                    "Perfect. And since you mentioned you're heading to Orlando with the kids, I'll include our PlatePass for the toll roads—just $13.99 total—and a child safety seat. Sound good?"<br>
+                    "Great. And your contact number?"<br>
+                    <strong class="save">⏱️ Time saved: 45 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 10 -->
+            <div class="strategy-card">
+                <h3>📦 Technique #10: Bundle Add-Ons (Package Approach)</h3>
+                <span class="phase">PHASE 5: ADD-ONS</span>
+                <div class="dont">
+                    ❌ <strong>DON'T OFFER ONE AT A TIME:</strong><br>
+                    "Would you like LDW?" → explain → wait<br>
+                    "How about GPS?" → explain → wait<br>
+                    "Do you want PlatePass?" → explain → wait<br>
+                    <strong>Time wasted: 90+ seconds</strong>
+                </div>
+                <div class="do">
+                    ✅ <strong>DO BUNDLE:</strong><br>
+                    "For your Florida trip with the family, I'll include our Protection Package with LDW, PlatePass for tolls, and GPS—that's $XX per day and covers everything you need. Sound good?"<br>
+                    <strong class="save">⏱️ Time saved: 60–90 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 11 -->
+            <div class="strategy-card">
+                <h3>💡 Technique #11: Recommend, Don't Ask</h3>
+                <span class="phase">PHASE 5: ADD-ONS</span>
+                <div class="dont">
+                    ❌ <strong>ASKING = LONGER CONVERSATIONS:</strong><br>
+                    "We have Loss Damage Waiver available. It covers damage to the vehicle if something happens. It's optional. Would you like to add it?"<br>
+                    [Customer: "What does it cover exactly?"]<br>
+                    [You explain again]<br>
+                    [Customer: "How much is it?"]<br>
+                    <strong>Time wasted: 90+ seconds</strong>
+                </div>
+                <div class="do">
+                    ✅ <strong>RECOMMENDING = FASTER ACCEPTANCE:</strong><br>
+                    "I'm including our Loss Damage Waiver—it protects you from any damage costs. That's $29 per day."<br>
+                    [Customer usually accepts or declines quickly]<br>
+                    <strong class="save">⏱️ Time saved: 60 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 12 -->
+            <div class="strategy-card">
+                <h3>📝 Technique #12: Batch Information Requests</h3>
+                <span class="phase">PHASE 6: DETAIL GATHERING</span>
+                <div class="dont">
+                    ❌ <strong>DON'T ASK SEPARATELY:</strong><br>
+                    "What's your email?"<br>
+                    [wait]<br>
+                    "And your phone number?"<br>
+                    [wait]<br>
+                    "And your zip code?"<br>
+                    <strong>Time wasted: 30 seconds</strong>
+                </div>
+                <div class="do">
+                    ✅ <strong>DO SAY:</strong><br>
+                    "I'll need your email, contact number, and zip code to complete the booking."<br>
+                    [Customer provides all at once]<br>
+                    <strong class="save">⏱️ Time saved: 20 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 13 -->
+            <div class="strategy-card">
+                <h3>✅ Technique #13: Streamlined Recap</h3>
+                <span class="phase">PHASE 7: RECAP & CLOSE</span>
+                <div class="dont">
+                    ❌ <strong>DON'T OVER-EXPLAIN:</strong><br>
+                    "Okay, so just to confirm, you're picking up from Orlando International Airport, which is located at 1 Jeff Fuqua Boulevard, Orlando, Florida 32827, on June 15th, 2026 at 3:00 PM Eastern Standard Time, and you'll be returning the vehicle to the exact same location, Orlando International Airport, on June 20th, 2026 at 3:00 PM Eastern Standard Time..."<br>
+                    <strong>Time wasted: 45 seconds</strong>
+                </div>
+                <div class="do">
+                    ✅ <strong>DO SAY:</strong><br>
+                    "Perfect! Confirming: Orlando Airport pickup June 15th at 3 PM, return June 20th at 3 PM, same location. Ford Escape or similar, total $487.50 including taxes and add-ons. Correct?"<br>
+                    <strong class="save">⏱️ Time saved: 30 seconds</strong>
+                </div>
+            </div>
+
+            <!-- Technique 14 -->
+            <div class="strategy-card">
+                <h3>🔐 Technique #14: Efficient Confirmation</h3>
+                <span class="phase">PHASE 7: RECAP & CLOSE</span>
+                <div class="dont">
+                    ❌ <strong>DON'T:</strong><br>
+                    "Your confirmation number is F-O-X-1-2-3-4-5-6-7-8. Let me repeat that: F as in Frank, O as in Oscar, X as in X-ray, 1-2-3-4-5-6-7-8. Did you get that? Would you like me to repeat it again?"<br>
+                    <strong>Time wasted: 45 seconds</strong>
+                </div>
+                <div class="do">
+                    ✅ <strong>DO:</strong><br>
+                    "Your confirmation number is FOX12345678—I'm sending it to your email now along with full details."<br>
+                    <strong class="save">⏱️ Time saved: 25 seconds</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top 10 Time-Wasters -->
+    <div class="card">
+        <div class="card-title">🚫 Top 10 Time-Wasters to Avoid</div>
+        <div class="strategy-grid">
+            <div class="strategy-card">
+                <h3>1️⃣ Over-Explaining Simple Concepts</h3>
+                <div class="dont">
+                    ❌ "Unlimited mileage means you can drive as many miles as you want, there's no limit, you won't be charged per mile, you can go anywhere..."
+                </div>
+                <div class="do">
+                    ✅ "This includes unlimited mileage."
+                </div>
+                <div class="time-saver">⏱️ Time saved: 15 seconds</div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>2️⃣ Unnecessary Small Talk</h3>
+                <div class="dont">
+                    ❌ "Oh, you're going to Disney World? That's so fun! I went there last year with my family. The weather should be great this time of year. Have you been before? You're going to love it!"
+                </div>
+                <div class="do">
+                    ✅ "Perfect! For your Disney trip, I'll include PlatePass and GPS."
+                </div>
+                <div class="time-saver">⏱️ Time saved: 30 seconds</div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>3️⃣ Repeating Information Already Provided</h3>
+                <div class="dont">
+                    ❌ Customer says: "I'm picking up June 15th at 3 PM"<br>
+                    You say: "Okay, so June 15th. And what time? Oh, 3 PM, got it."
+                </div>
+                <div class="do">
+                    ✅ "Got it—June 15th at 3 PM." [move on]
+                </div>
+                <div class="time-saver">⏱️ Time saved: 10 seconds</div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>4️⃣ Asking for Confirmation on Every Detail</h3>
+                <div class="dont">
+                    ❌ "Is that spelled J-O-H-N?" "And your last name is Smith, S-M-I-T-H?" "Your email is john@email.com, that's J-O-H-N at E-M-A-I-L dot com?"
+                </div>
+                <div class="do">
+                    ✅ Only confirm unusual spellings or unclear audio
+                </div>
+                <div class="time-saver">⏱️ Time saved: 30 seconds</div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>5️⃣ Long Holds Without Preparation</h3>
+                <div class="dont">
+                    ❌ "Let me put you on hold while I check availability..." [120-second hold while you search]
+                </div>
+                <div class="do">
+                    ✅ Have system ready, search while asking questions
+                </div>
+                <div class="time-saver">⏱️ Time saved: 60–90 seconds</div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>6️⃣ Explaining Every Possible Scenario</h3>
+                <div class="dont">
+                    ❌ "If you're late, you might lose the reservation, but if you call us, we might be able to hold it, unless it's a busy day, then we might not have availability, but we'll try our best..."
+                </div>
+                <div class="do">
+                    ✅ "If your plans change, call us and we'll assist you."
+                </div>
+                <div class="time-saver">⏱️ Time saved: 20 seconds</div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>7️⃣ Offering Declined Add-Ons Multiple Times</h3>
+                <div class="dont">
+                    ❌ Customer declines GPS<br>
+                    You: "Are you sure? It's really helpful..."<br>
+                    Customer: "No thanks"<br>
+                    You: "It's only $X per day..."<br>
+                    Customer: "I'm good"<br>
+                    You: "Okay, but if you change your mind..."
+                </div>
+                <div class="do">
+                    ✅ Offer once, attempt one rebuttal, move on
+                </div>
+                <div class="time-saver">⏱️ Time saved: 45 seconds</div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>8️⃣ Reading Entire Terms & Conditions</h3>
+                <div class="dont">
+                    ❌ Reading full T&Cs verbally during the call
+                </div>
+                <div class="do">
+                    ✅ "Full terms are in the email I'm sending. Key points: bring your credit card and license at pickup."
+                </div>
+                <div class="time-saver">⏱️ Time saved: 60+ seconds</div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>9️⃣ Apologizing Excessively</h3>
+                <div class="dont">
+                    ❌ "I'm so sorry for the wait. I apologize for taking so long. Sorry about that. I'm really sorry..."
+                </div>
+                <div class="do">
+                    ✅ "Thank you for your patience." [once, then move on]
+                </div>
+                <div class="time-saver">⏱️ Time saved: 15 seconds</div>
+            </div>
+
+            <div class="strategy-card">
+                <h3>🔟 Asking "Anything Else?" Multiple Times</h3>
+                <div class="dont">
+                    ❌ At the end of every phase: "Is there anything else I can help you with?"
+                </div>
+                <div class="do">
+                    ✅ Ask ONCE at the very end of the call
+                </div>
+                <div class="time-saver">⏱️ Time saved: 30 seconds</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Coaching Framework -->
+    <div class="card">
+        <div class="card-title">🎓 How to Coach AHT Reduction</div>
+        <div class="step-box">
+            <div class="step">
+                <div class="step-num">1</div>
+                <div>
+                    <strong>Identify the Root Cause</strong><br>
+                    Listen to calls and categorize time usage:<br><br>
+                    ☐ Excessive small talk<br>
+                    ☐ Over-explaining concepts<br>
+                    ☐ Asking questions one at a time<br>
+                    ☐ Long holds/system delays<br>
+                    ☐ Repeating information unnecessarily<br>
+                    ☐ Offering declined add-ons multiple times<br>
+                    ☐ Inefficient objection handling<br>
+                    ☐ Lack of call structure<br>
+                    ☐ Typing slowly/system navigation issues<br>
+                    ☐ Uncertain/hesitant language
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div>
+                    <strong>Use Side-by-Side Comparison</strong><br>
+                    Show agent TWO versions of the same interaction to highlight the difference between inefficient and efficient approaches. This visual comparison helps agents understand exactly what needs to change.
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div>
+                    <strong>The "60-Second Challenge"</strong><br>
+                    Coaching Exercise: "Let's see if you can complete the Needs Assessment phase in 60 seconds or less."<br><br>
+                    Agent practices:<br>
+                    - Bundling questions<br>
+                    - Typing while listening<br>
+                    - Moving quickly but naturally<br><br>
+                    Debrief: What worked? What felt rushed? How can we balance speed and quality?
+                </div>
+            </div>
+            <div class="step">
+                <div class="step-num">4</div>
+                <div>
+                    <strong>Celebrate Efficiency Wins</strong><br>
+                    Recognition Program:<br>
+                    - Highlight agents who improve AHT while maintaining quality<br>
+                    - Share best practices with the team<br>
+                    - Create friendly competition with weekly efficiency champions
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Wins -->
+    <div class="card">
+        <div class="card-title">⚡ 5 Quick Wins: Implement Today</div>
+        <div class="g2">
+            <div class="box box-success">
+                <strong>1. Bundle Your Opening Questions</strong><br><br>
+                Before: 3 separate questions (45 sec)<br>
+                After: 1 combined question (20 sec)<br>
+                <strong style="color:#27ae60;">Immediate savings: 25 seconds</strong>
+            </div>
+            <div class="box box-success">
+                <strong>2. Use Assumptive Language</strong><br><br>
+                Before: "Would you like to book this?"<br>
+                After: "Let me lock that in for you."<br>
+                <strong style="color:#27ae60;">Immediate savings: 15 seconds</strong>
+            </div>
+            <div class="box box-success">
+                <strong>3. Integrate Add-Ons During Details</strong><br><br>
+                Before: Separate add-on phase<br>
+                After: Weave into conversation<br>
+                <strong style="color:#27ae60;">Immediate savings: 45 seconds</strong>
+            </div>
+            <div class="box box-success">
+                <strong>4. Streamline Your Recap</strong><br><br>
+                Before: Long, detailed confirmation<br>
+                After: Concise bullet points<br>
+                <strong style="color:#27ae60;">Immediate savings: 30 seconds</strong>
+            </div>
+            <div class="box box-success">
+                <strong>5. Stop Over-Explaining</strong><br><br>
+                Before: Explain every detail thoroughly<br>
+                After: Provide essential info only<br>
+                <strong style="color:#27ae60;">Immediate savings: 60 seconds</strong>
+            </div>
+            <div class="box box-warning" style="grid-column:1/-1;text-align:center;font-weight:700;color:#7d5a00;">
+                💡 TOTAL IMMEDIATE AHT REDUCTION: 175 seconds (2:55)
+            </div>
+        </div>
+    </div>
+
+    <!-- The Golden Rule -->
+    <div class="card">
+        <div class="card-title">🏆 The Golden Rule of AHT Coaching</div>
+        <div class="box box-smart" style="text-align:center;padding:20px;font-size:14px;margin-bottom:10px;">
+            <strong style="font-size:16px;">"Every second counts, but every booking counts more."</strong>
+        </div>
+        <div class="g3">
+            <div class="box box-danger">
+                <strong style="color:#e74c3c;">❌ Speed WITHOUT Quality</strong><br><br>
+                = Lost bookings<br>
+                = Poor customer experience<br>
+                = Low conversion rates<br>
+                = Damaged reputation
+            </div>
+            <div class="box box-warning">
+                <strong style="color:#f39c12;">⚠️ Quality WITHOUT Speed</strong><br><br>
+                = Poor efficiency<br>
+                = Long wait times<br>
+                = Frustrated customers<br>
+                = Higher costs
+            </div>
+            <div class="box box-success">
+                <strong style="color:#27ae60;">✅ Speed + Quality</strong><br><br>
+                = Perfect balance<br>
+                = More bookings<br>
+                = Happy customers<br>
+                = Sustainable success
+            </div>
+        </div>
+        <div class="box box-blue" style="margin-top:14px;text-align:center;font-size:13px;font-weight:700;">
+            Reduce AHT by working smarter, not by rushing through calls or sacrificing conversion rates.
+        </div>
+    </div>
+
+    <!-- AHT Improvement Action Plan -->
+    <div class="card">
+        <div class="card-title">📋 AHT Improvement Action Plan by Level</div>
+        <div class="g2">
+            <div class="card" style="border-left:4px solid #f39c12;">
+                <div class="card-title" style="color:#f39c12;">⚠️ If AHT is 371–420 seconds</div>
+                <div class="box box-warning">
+                    ☐ Review call structure—are you following the 7 phases?<br>
+                    ☐ Identify your longest phase—where are you spending too much time?<br>
+                    ☐ Practice bundling questions<br>
+                    ☐ Eliminate one time-waster from the list above<br>
+                    ☐ Use Quick Reference Card for faster responses<br>
+                    ☐ Role-play 3–5 calls focusing on speed<br>
+                    ☐ Target: Reduce by 30 seconds in 1 week
+                </div>
+            </div>
+            <div class="card" style="border-left:4px solid #e74c3c;">
+                <div class="card-title" style="color:#e74c3c;">🔴 If AHT is 421+ seconds</div>
+                <div class="box box-danger">
+                    ☐ Schedule coaching session immediately<br>
+                    ☐ Listen to your longest calls—identify patterns<br>
+                    ☐ Practice role-plays focusing on speed<br>
+                    ☐ Use Objection Flip Chart to reduce objection handling time<br>
+                    ☐ Shadow a high-performing agent<br>
+                    ☐ Focus on ONE phase at a time for improvement<br>
+                    ☐ Daily check-ins on progress<br>
+                    ☐ Target: Reduce by 60 seconds in 2 weeks
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- System & Tools Efficiency -->
+    <div class="card">
+        <div class="card-title">🔧 System & Tools Efficiency Tips</div>
+        <div class="g2">
+            <div class="box box-blue">
+                <strong>⌨️ Keyboard Shortcuts & Speed Techniques</strong><br><br>
+                ✅ Tab between fields instead of clicking<br>
+                ✅ Use copy/paste for confirmation numbers<br>
+                ✅ Create text shortcuts for common phrases<br>
+                ✅ Keep multiple browser tabs open<br>
+                ✅ Bookmark frequently used pages<br><br>
+                <strong>💡 Text Expanders (if available):</strong><br>
+                "greet" → Full greeting<br>
+                "req" → Requirements statement<br>
+                "prep" → Prepaid rate pitch
+            </div>
+            <div class="box box-violet">
+                <strong>📺 Screen Organization</strong><br><br>
+                <strong>PRIMARY SCREEN:</strong><br>
+                - Booking system (main window)<br>
+                - Customer information form<br>
+                - Rate calculator<br><br>
+                <strong>SECONDARY SCREEN (if available):</strong><br>
+                - Quick Reference Card (digital)<br>
+                - Objection scripts<br>
+                - Policy documents
+            </div>
+        </div>
+    </div>
+
+    <!-- AHT by Call Type -->
+    <div class="card">
+        <div class="card-title">📊 AHT Reduction by Call Type</div>
+        <div class="g3">
+            <div class="card" style="border-top:4px solid #27ae60;">
+                <div class="card-title" style="color:#27ae60;">🟢 Simple Booking</div>
+                <div class="box box-success">
+                    <strong>Target: 300 seconds (5:00)</strong><br><br>
+                    Customer knows what they want, no objections<br><br>
+                    <strong>Key Efficiency Tips:</strong><br>
+                    - Move quickly through phases<br>
+                    - Bundle all questions<br>
+                    - Recommend add-ons confidently<br>
+                    - Streamlined recap
+                </div>
+            </div>
+            <div class="card" style="border-top:4px solid #f39c12;">
+                <div class="card-title" style="color:#f39c12;">🟡 Booking with Objections</div>
+                <div class="box box-warning">
+                    <strong>Target: 340 seconds (5:40)</strong><br><br>
+                    Customer has 1–2 objections<br><br>
+                    <strong>Key Efficiency Tips:</strong><br>
+                    - Use pre-scripted objection responses<br>
+                    - Attempt second close quickly<br>
+                    - Don't over-explain<br>
+                    - Move on after 2 attempts
+                </div>
+            </div>
+            <div class="card" style="border-top:4px solid #e74c3c;">
+                <div class="card-title" style="color:#e74c3c;">🔴 Complex Booking</div>
+                <div class="box box-danger">
+                    <strong>Target: 370 seconds (6:10) — MAXIMUM ACCEPTABLE</strong><br><br>
+                    Multiple drivers, special requirements, multiple objections<br><br>
+                    <strong>Key Efficiency Tips:</strong><br>
+                    - Stay organized with multiple details<br>
+                    - Bundle information requests<br>
+                    - Don't let complexity derail structure<br>
+                    - Use efficient recap even with complex details
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ════════════ COACHING TRACKER ════════════ -->
+<div id="tracker" class="panel">
+    <div class="sec-title">📈 Agent Coaching & Performance Tracker</div>
+    <div class="card">
+        <div class="card-title">➕ Add New Agent</div>
+        <div class="form-row c3">
+            <div class="fg">
+                <label>Agent Name</label>
+                <input type="text" id="agentName" placeholder="Enter full name">
+            </div>
+            <div class="fg">
+                <label>🪪 Employee ID</label>
+                <input type="text" id="agentEmpId" placeholder="e.g. EMP-00123" class="empid-field">
+                <small>Unique identifier for tracking — e.g. EMP-00123</small>
+            </div>
+            <div class="fg">
+                <label>Agent Work Email Address</label>
+                <input type="email" id="agentWorkEmail" placeholder="agent@company.com">
+                <small>⚠️ Work email required — coaching documents will be sent here</small>
+            </div>
+        </div>
+        <div class="form-row c2">
+            <div class="fg" style="background:#e3f2fd;padding:10px;border-radius:8px;border-left:4px solid #1565C0;">
+                <label style="color:#1565C0;">📞 General Questions AHT (seconds)</label>
+                <input type="number" id="currentGQAHT" placeholder="e.g. 290" style="border-color:#1565C0;">
+                <small style="color:#1565C0;">Target ≤295s | Acceptable 296–300s | Critical 301+s</small>
+            </div>
+            <div class="fg" style="background:#f3e5f5;padding:10px;border-radius:8px;border-left:4px solid #6A1B9A;">
+                <label style="color:#6A1B9A;">📋 Reservations AHT (seconds)</label>
+                <input type="number" id="currentResAHT" placeholder="e.g. 340" style="border-color:#6A1B9A;">
+                <small style="color:#6A1B9A;">Target ≤340s | Acceptable 341–370s | Critical 421+s</small>
+            </div>
+        </div>
+        <div class="form-row c4">
+            <div class="fg"><label>Conversion Rate (%)</label><input type="number" id="conversionRate" placeholder="85"></div>
+            <div class="fg"><label>Quality Score (%)</label><input type="number" id="qualityScore" placeholder="95"></div>
+            <div class="fg"><label>Prepaid Rate (%)</label><input type="number" id="prepaidRate" placeholder="75"></div>
+            <div class="fg"><label>Pay Later Rate (%)</label><input type="number" id="payLaterRate" placeholder="25"></div>
+        </div>
+        <div style="margin-top:6px;">
+            <button class="btn btn-primary" onclick="addAgent()">➕ Add Agent</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">👥 Active Agents</div>
+        <div style="display:flex;gap:10px;margin-bottom:12px;flex-wrap:wrap;">
+            <input type="text" id="trackerSearch" placeholder="🔍 Search by name or Employee ID…" oninput="renderAgentList()" style="max-width:320px;padding:8px 12px;border:1.5px solid #ddd;border-radius:6px;font-size:12px;font-family:inherit;">
+        </div>
+        <div id="agentList"><div class="empty-state">No agents added yet.</div></div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">📊 Weekly Performance Tracking</div>
+        <div class="agent-sel">
+            <label>Select Agent to Track:</label>
+            <select id="agentSelector" onchange="loadAgentWeeklyData()"><option value="">— Select an Agent —</option></select>
+        </div>
+        <div id="weeklyTrackingSection" style="display:none;">
+            <div class="week-nav">
+                <button class="week-btn" onclick="navigateWeek(-1)">← Previous Week</button>
+                <div class="week-lbl" id="currentWeekDisplay">Week 1, 2025</div>
+                <button class="week-btn" onclick="navigateWeek(1)">Next Week →</button>
+            </div>
+            <div style="background:#f8f9fa;border:1.5px solid #e0d0f0;border-radius:10px;padding:16px;">
+                <div style="font-weight:700;color:#4B0082;font-size:13px;margin-bottom:12px;">
+                    Metrics for <span id="selectedAgentName"></span>
+                    <span id="selectedAgentEmpId" style="margin-left:8px;"></span>
+                </div>
+                <div class="form-row c2">
+                    <div class="fg" style="background:#e3f2fd;padding:10px;border-radius:8px;border-left:4px solid #1565C0;">
+                        <label style="color:#1565C0;">📞 GQ AHT (seconds)</label>
+                        <input type="number" id="weeklyGQAHT" onchange="saveWeeklyData()" style="border-color:#1565C0;">
+                        <div id="gqStatusInline" style="margin-top:4px;"></div>
+                    </div>
+                    <div class="fg" style="background:#f3e5f5;padding:10px;border-radius:8px;border-left:4px solid #6A1B9A;">
+                        <label style="color:#6A1B9A;">📋 Reservations AHT (seconds)</label>
+                        <input type="number" id="weeklyResAHT" onchange="saveWeeklyData()" style="border-color:#6A1B9A;">
+                        <div id="resStatusInline" style="margin-top:4px;"></div>
+                    </div>
+                </div>
+                <div class="form-row c4">
+                    <div class="fg"><label>Conversion (%)</label><input type="number" id="weeklyConversion" onchange="saveWeeklyData()"></div>
+                    <div class="fg"><label>Quality (%)</label><input type="number" id="weeklyQuality" onchange="saveWeeklyData()"></div>
+                    <div class="fg"><label>Prepaid (%)</label><input type="number" id="weeklyPrepaid" onchange="saveWeeklyData()"></div>
+                    <div class="fg"><label>Pay Later (%)</label><input type="number" id="weeklyPayLater" onchange="saveWeeklyData()"></div>
+                </div>
+                <div class="fg" style="margin-top:6px;">
+                    <label>Weekly Notes / Coaching Comments</label>
+                    <textarea id="weeklyNotes" rows="2" onchange="saveWeeklyData()" placeholder="Add coaching notes…"></textarea>
+                </div>
+                <div class="box box-success" style="margin-top:10px;">
+                    <strong>📞 GQ Status:</strong> <span id="weeklyGQStatus" class="badge">—</span>
+                    &nbsp;&nbsp;&nbsp;
+                    <strong>📋 Res Status:</strong> <span id="weeklyResStatus" class="badge">—</span>
+                </div>
+            </div>
+            <div class="card" style="margin-top:14px;">
+                <div class="card-title">Performance History</div>
+                <div id="performanceHistory"><div class="empty-state">No historical data yet.</div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════ SMART COACHING ════════════ -->
+<div id="smart" class="panel">
+    <div class="sec-title">🎓 SMART Coaching Framework & Session Tracker</div>
+    <div class="card">
+        <div class="card-title">👤 Select Agent for Coaching</div>
+        <div class="agent-sel">
+            <label>Select Agent:</label>
+            <select id="coachingAgentSelector" onchange="loadAgentForCoaching()"><option value="">— Select an Agent —</option></select>
+        </div>
+        <div id="agentStatsDisplay" style="display:none;">
+            <div class="stats-disp">
+                <h4>📊 Current Performance — <span id="coachingAgentName"></span> <span id="coachingAgentEmpId" style="font-size:11px;opacity:0.85;"></span></h4>
+                <div class="stats-grid">
+                    <div class="stat-box sb-id"><h5>🪪 Employee ID</h5><div class="sv" id="statEmpId" style="font-size:13px;font-family:monospace;">—</div></div>
+                    <div class="stat-box sb-blue"><h5>📞 GQ AHT</h5><div class="sv" id="statGQAHT">—</div><small>sec</small><div id="statGQBadge" style="margin-top:5px;"></div></div>
+                    <div class="stat-box sb-violet"><h5>📋 Res AHT</h5><div class="sv" id="statResAHT">—</div><small>sec</small><div id="statResBadge" style="margin-top:5px;"></div></div>
+                    <div class="stat-box sb-white"><h5>Conversion</h5><div class="sv" id="statConversion">—</div><small>%</small></div>
+                    <div class="stat-box sb-white"><h5>Quality</h5><div class="sv" id="statQuality">—</div><small>%</small></div>
+                    <div class="stat-box sb-white"><h5>Prepaid</h5><div class="sv" id="statPrepaid">—</div><small>%</small></div>
+                </div>
+            </div>
+            <button class="btn btn-success" onclick="openNewSessionModal()">➕ Log New Coaching Session</button>
+        </div>
+    </div>
+    <div id="coachingSessionsSection" style="display:none;">
+        <div class="card">
+            <div class="card-title">📝 Coaching Sessions History</div>
+            <div id="coachingSessionsList"><div class="empty-state">No coaching sessions logged yet.</div></div>
+        </div>
+        <div class="card">
+            <div class="card-title">📈 Weekly Progress Summary</div>
+            <div id="weeklyProgressChart"><div class="empty-state">Log coaching sessions to see weekly progress.</div></div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-title">📋 What is SMART Coaching?</div>
+        <div class="box box-smart">
+            <strong>S – Specific:</strong> Clearly define what needs to be achieved<br>
+            <strong>M – Measurable:</strong> Include metrics to track progress<br>
+            <strong>A – Achievable:</strong> Realistic given available resources and time<br>
+            <strong>R – Relevant:</strong> Aligned with overall performance goals<br>
+            <strong>T – Time-bound:</strong> Has a clear deadline or timeframe
+        </div>
+        <div class="g3" style="margin-top:12px;">
+            <div class="box box-example"><strong>Example 1 — GQ AHT</strong><br><br><strong>S:</strong> Reduce GQ AHT using Quick Reference Card<br><strong>M:</strong> From 310s → 295s<br><strong>A:</strong> Keep QRC open during all GQ calls<br><strong>R:</strong> 301+s is Critical<br><strong>T:</strong> 1 week</div>
+            <div class="box box-example"><strong>Example 2 — Res AHT</strong><br><br><strong>S:</strong> Reduce Res AHT by bundling questions<br><strong>M:</strong> From 420s → 380s<br><strong>A:</strong> Combine name, location, type into one<br><strong>R:</strong> Faster reservations = more bookings<br><strong>T:</strong> 2 weeks</div>
+            <div class="box box-example"><strong>Example 3 — Conversion</strong><br><br><strong>S:</strong> Increase conversion using assumptive language<br><strong>M:</strong> From 75% → 85%<br><strong>A:</strong> Replace "Would you like to book?" with "Let me lock that in."<br><strong>R:</strong> Higher conversion = more revenue<br><strong>T:</strong> 3 weeks</div>
+        </div>
+    </div>
+</div>
+
+<!-- ════════════ ACKNOWLEDGEMENTS ════════════ -->
+<div id="acknowledgements" class="panel">
+    <div class="sec-title">✅ Coaching Document Acknowledgements</div>
+    <div class="box box-info" style="margin-bottom:14px;">
+        <strong>ℹ️ Workflow:</strong>
+        <strong>1</strong> Log session →
+        <strong>2</strong> Click <em>📧 Prepare &amp; Send Email</em> (body copied, email client opens) →
+        <strong>3</strong> Paste body &amp; send in Outlook/Gmail →
+        <strong>4</strong> Click <em>✅ Mark as Sent</em> →
+        <strong>5</strong> Agent clicks <em>✅ Acknowledge Receipt</em> here.
+    </div>
+    <div class="filter-bar">
+        <label style="font-size:12px;font-weight:700;color:#4B0082;">Filter:</label>
+        <select id="ackFilterAgent" onchange="renderAckTab()"><option value="">All Agents</option></select>
+        <select id="ackFilterStatus" onchange="renderAckTab()">
+            <option value="">All Statuses</option>
+            <option value="not-sent">Not Sent</option>
+            <option value="sent">Sent – Awaiting Acknowledgement</option>
+            <option value="acknowledged">Acknowledged</option>
+        </select>
+        <input type="text" id="ackSearch" placeholder="🔍 Search name, Employee ID, or focus area…" oninput="renderAckTab()" style="width:260px;">
+    </div>
+    <div id="ackList"><div class="empty-state">No coaching sessions found. Log sessions in SMART Coaching first.</div></div>
+</div>
+
+</div><!-- /page-inner -->
+</div><!-- /page-wrap -->
+
+<!-- ════════════════════════════════════════════════════════════
+     MODAL: NEW SESSION
+════════════════════════════════════════════════════════════ -->
+<div id="newSessionModal" class="modal">
+<div class="modal-box">
+    <div class="modal-hdr">
+        <h2>📝 Log New Coaching Session</h2>
+        <button class="modal-close" onclick="closeModal('newSessionModal')">&times;</button>
+    </div>
+    <div class="form-row c2">
+        <div class="fg"><label>Session Date</label><input type="date" id="sessionDate"></div>
+        <div class="fg"><label>Session Type</label>
+            <select id="sessionType">
+                <option value="One-on-One">One-on-One Coaching</option>
+                <option value="Performance Review">Performance Review</option>
+                <option value="Goal Setting">Goal Setting Session</option>
+                <option value="Follow-up">Follow-up Session</option>
+                <option value="Skill Development">Skill Development</option>
+            </select>
+        </div>
+    </div>
+    <div class="fg" style="margin-bottom:10px;"><label>Focus Area</label>
+        <select id="focusArea">
+            <option value="GQ AHT Reduction">📞 General Questions AHT Reduction</option>
+            <option value="Reservations AHT Reduction">📋 Reservations AHT Reduction</option>
+            <option value="Conversion Rate">Conversion Rate Improvement</option>
+            <option value="Quality Score">Quality Score Improvement</option>
+            <option value="Prepaid Rate">Prepaid Rate Increase</option>
+            <option value="Call Structure">Call Structure & Flow</option>
+            <option value="Customer Service">Customer Service Skills</option>
+            <option value="Product Knowledge">Product Knowledge</option>
+            <option value="Overall Performance">Overall Performance</option>
+        </select>
+    </div>
+    <div style="font-weight:700;color:#4B0082;font-size:13px;margin:12px 0 8px;padding-bottom:6px;border-bottom:2px solid #f0f0f0;">🎯 SMART Goal</div>
+    <div class="form-row c1">
+        <div class="fg"><label>S — Specific</label><textarea id="goalSpecific" rows="2" placeholder="What exactly needs to be improved?"></textarea></div>
+        <div class="fg"><label>M — Measurable</label><textarea id="goalMeasurable" rows="2" placeholder="How will success be measured?"></textarea></div>
+    </div>
+    <div class="form-row c2">
+        <div class="fg"><label>A — Achievable</label><textarea id="goalAchievable" rows="2" placeholder="What actions will be taken?"></textarea></div>
+        <div class="fg"><label>R — Relevant</label><textarea id="goalRelevant" rows="2" placeholder="Why does this matter?"></textarea></div>
+    </div>
+    <div class="form-row c2">
+        <div class="fg"><label>T — Target Date</label><input type="date" id="goalDeadline"></div>
+        <div class="fg"><label>Goal Status</label>
+            <select id="goalStatus">
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+                <option value="Pending">Pending</option>
+            </select>
+        </div>
+    </div>
+    <div class="fg" style="margin-bottom:10px;"><label>Session Notes</label><textarea id="sessionNotes" rows="2" placeholder="Additional observations or action items…"></textarea></div>
+    <div style="font-weight:700;color:#4B0082;font-size:13px;margin:12px 0 8px;padding-bottom:6px;border-bottom:2px solid #f0f0f0;">📊 Metrics at Session</div>
+    <div class="form-row c2">
+        <div class="fg" style="background:#e3f2fd;padding:10px;border-radius:8px;border-left:4px solid #1565C0;">
+            <label style="color:#1565C0;">📞 GQ AHT (sec)</label>
+            <input type="number" id="sessionGQAHT" placeholder="e.g. 305" style="border-color:#1565C0;">
+        </div>
+        <div class="fg" style="background:#f3e5f5;padding:10px;border-radius:8px;border-left:4px solid #6A1B9A;">
+            <label style="color:#6A1B9A;">📋 Res AHT (sec)</label>
+            <input type="number" id="sessionResAHT" placeholder="e.g. 380" style="border-color:#6A1B9A;">
+        </div>
+    </div>
+    <div class="form-row c4">
+        <div class="fg"><label>Conversion (%)</label><input type="number" id="sessionConversion" placeholder="%"></div>
+        <div class="fg"><label>Quality (%)</label><input type="number" id="sessionQuality" placeholder="%"></div>
+        <div class="fg"><label>Prepaid (%)</label><input type="number" id="sessionPrepaid" placeholder="%"></div>
+        <div class="fg"><label>Pay Later (%)</label><input type="number" id="sessionPayLater" placeholder="%"></div>
+    </div>
+    <div style="font-weight:700;color:#4B0082;font-size:13px;margin:12px 0 8px;padding-bottom:6px;border-bottom:2px solid #f0f0f0;">📧 Email Details</div>
+    <div class="email-notice">📧 The coaching document will be sent to the agent's <strong>work email address</strong>. Please verify before saving.</div>
+    <div class="form-row c2">
+        <div class="fg"><label>Leader / Sender Email</label><input type="email" id="leaderEmail" placeholder="leader@company.com"></div>
+        <div class="fg">
+            <label>Agent Work Email (auto-filled from profile)</label>
+            <input type="email" id="agentEmail" placeholder="agent@company.com">
+            <small>⚠️ Must be the agent's official work email address</small>
+        </div>
+    </div>
+    <div style="margin-top:16px;display:flex;gap:8px;">
+        <button class="btn btn-success" onclick="saveCoachingSession()">💾 Save Coaching Session</button>
+        <button class="btn btn-secondary" onclick="closeModal('newSessionModal')">Cancel</button>
+    </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MODAL: EMAIL PREPARE
+════════════════════════════════════════════════════════════ -->
+<div id="emailModal" class="modal">
+<div class="modal-box">
+    <div class="modal-hdr">
+        <h2>📧 Prepare & Send Coaching Document</h2>
+        <button class="modal-close" onclick="closeModal('emailModal')">&times;</button>
+    </div>
+    <div class="step-box">
+        <div class="step"><div class="step-num">1</div><div>Review the email details and body preview below. Add an optional personal note if needed.</div></div>
+        <div class="step"><div class="step-num">2</div><div>Click <strong style="color:#27ae60;">📋 Copy Email Body</strong> — the full coaching document is automatically copied to your clipboard.</div></div>
+        <div class="step"><div class="step-num">3</div><div>Click <strong style="color:#4B0082;">📧 Open Email Client</strong> — Outlook or Gmail opens with <strong>To</strong> and <strong>Subject</strong> pre-filled. <strong>Paste (Ctrl+V)</strong> the body and click Send.</div></div>
+        <div class="step"><div class="step-num">4</div><div>Return here and click <strong style="color:#e67e22;">✅ Mark as Sent</strong> to update the session status.</div></div>
+    </div>
+    <div class="email-meta">
+        <div class="email-meta-row"><span class="lbl">From:</span><span id="previewFrom">—</span></div>
+        <div class="email-meta-row"><span class="lbl">To:</span><span id="previewTo" style="color:#1565C0;font-weight:700;">—</span></div>
+        <div class="email-meta-row"><span class="lbl">Subject:</span><span id="previewSubject">—</span></div>
+    </div>
+    <div class="fg" style="margin-bottom:10px;">
+        <label>Personal Note to Agent (optional)</label>
+        <textarea id="additionalNote" rows="2" onchange="refreshBodyPreview()" placeholder="e.g. Great effort this week — keep it up!"></textarea>
+    </div>
+    <div class="copy-banner" id="copyBanner">✅ Email body copied to clipboard! Open your email client and paste (Ctrl+V / Cmd+V).</div>
+    <label style="font-size:11px;font-weight:700;color:#4B0082;display:block;margin-bottom:4px;">Email Body Preview:</label>
+    <div class="email-preview" id="previewBody"></div>
+    <div style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-success" onclick="copyEmailBody()">📋 Copy Email Body</button>
+        <button class="btn btn-primary" onclick="openEmailClientOnly()">📧 Open Email Client</button>
+        <button class="btn btn-warning" onclick="markAsSent()">✅ Mark as Sent</button>
+        <button class="btn btn-secondary" onclick="closeModal('emailModal')">Cancel</button>
+    </div>
+    <div class="box box-info" style="margin-top:12px;font-size:11px;">
+        💡 <strong>Why copy &amp; paste?</strong> Email clients limit mailto: URL length. Copying the body separately avoids "Bad Request" errors and ensures the full document is delivered correctly.
+    </div>
+</div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MODAL: ACKNOWLEDGE
+════════════════════════════════════════════════════════════ -->
+<div id="acknowledgeModal" class="modal">
+<div class="modal-box" style="max-width:640px;">
+    <div class="modal-hdr">
+        <h2 style="color:#27ae60;">✅ Acknowledge Coaching Document</h2>
+        <button class="modal-close" onclick="closeModal('acknowledgeModal')">&times;</button>
+    </div>
+    <div class="ack-confirm">
+        <strong>📋 By acknowledging, you confirm that you have:</strong><br>
+        ✔ Received this coaching document via your work email<br>
+        ✔ Read and understood the SMART goals and feedback<br>
+        ✔ Agreed to work towards the stated improvement targets
+    </div>
+    <div class="doc-preview" id="ackDocPreview"></div>
+    <div class="fg" style="margin-bottom:10px;"><label>Your Full Name (type to confirm identity)</label><input type="text" id="ackNameInput" placeholder="Type your full name here…"></div>
+    <div class="fg" style="margin-bottom:16px;"><label>Comments or Questions for your Leader (optional)</label><textarea id="ackCommentsInput" rows="2" placeholder="Any feedback or questions…"></textarea></div>
+    <div style="display:flex;gap:8px;">
+        <button class="btn btn-success" onclick="confirmAcknowledgement()">✅ I Acknowledge Receipt of This Coaching Document</button>
+        <button class="btn btn-secondary" onclick="closeModal('acknowledgeModal')">Cancel</button>
+    </div>
+</div>
+</div>
+
+<script>
+'use strict';
+let agents = JSON.parse(localStorage.getItem('emct_agents')||'[]');
+let currentWeek = getThisWeekKey();
+let selAgentId = null, selCoachingAgentId = null;
+let pendingEmailAgentId = null, pendingEmailSessionId = null;
+let pendingAckAgentId = null, pendingAckSessionId = null;
+
+// ── Week ──────────────────────────────────────────────────────────────────────
+function getThisWeekKey(){const now=new Date(),wn=weekNum(now);return `${now.getFullYear()}-W${String(wn).padStart(2,'0')}`;}
+function weekNum(date){const d=new Date(Date.UTC(date.getFullYear(),date.getMonth(),date.getDate()));const day=d.getUTCDay()||7;d.setUTCDate(d.getUTCDate()+4-day);const ys=new Date(Date.UTC(d.getUTCFullYear(),0,1));return Math.ceil((((d-ys)/86400000)+1)/7);}
+function fmtWeek(key){const[y,w]=key.split('-W');return `Week ${parseInt(w)}, ${y}`;}
+function navigateWeek(dir){let[y,w]=currentWeek.split('-W');let nw=parseInt(w)+dir,ny=parseInt(y);if(nw>52){nw=1;ny++;}if(nw<1){nw=52;ny--;}currentWeek=`${ny}-W${String(nw).padStart(2,'0')}`;document.getElementById('currentWeekDisplay').textContent=fmtWeek(currentWeek);loadWeeklyDataForCurrentWeek();}
+
+// ── Tabs ──────────────────────────────────────────────────────────────────────
+function openTab(evt,tabName){
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.getElementById(tabName).classList.add('active');
+    evt.currentTarget.classList.add('active');
+    if(tabName==='dashboard') updateDashboard();
+    if(tabName==='smart') refreshCoachingSelector();
+    if(tabName==='acknowledgements'){renderAckTab();populateAckAgentFilter();}
+}
+
+// ── Status Helpers ────────────────────────────────────────────────────────────
+function gqStatus(a){if(!a||a<=0)return 'N/A';if(a<=295)return 'On Target';if(a<=300)return 'Acceptable';return 'Critical';}
+function gqBC(a){const s=gqStatus(a);if(s==='On Target')return 'badge b-green';if(s==='Acceptable')return 'badge b-teal';if(s==='Critical')return 'badge b-red';return 'badge b-grey';}
+function resStatus(a){if(!a||a<=0)return 'N/A';if(a<=300)return 'Exceptional';if(a<=340)return 'Excellent';if(a<=370)return 'Good';if(a<=420)return 'Needs Work';return 'Critical';}
+function resBC(a){const s=resStatus(a);if(s==='Exceptional'||s==='Excellent')return 'badge b-green';if(s==='Good')return 'badge b-blue';if(s==='Needs Work')return 'badge b-orange';if(s==='Critical')return 'badge b-red';return 'badge b-grey';}
+function goalBC(s){if(s==='Completed')return 'badge b-green';if(s==='In Progress')return 'badge b-blue';return 'badge b-grey';}
+function docLabel(ds){return{'not-sent':'Not Sent','sent':'Sent – Awaiting Acknowledgement','acknowledged':'Acknowledged'}[ds]||'Not Sent';}
+function docBC(ds){if(ds==='acknowledged')return 'badge b-green';if(ds==='sent')return 'badge b-orange';return 'badge b-silver';}
+
+// ── Persist ───────────────────────────────────────────────────────────────────
+function save(){localStorage.setItem('emct_agents',JSON.stringify(agents));}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+window.onclick=function(e){['newSessionModal','emailModal','acknowledgeModal'].forEach(id=>{const m=document.getElementById(id);if(e.target===m)closeModal(id);});}
+
+// ── Add Agent (NOW WITH EMPLOYEE ID) ─────────────────────────────────────────
+function addAgent(){
+    const name      = document.getElementById('agentName').value.trim();
+    const empId     = document.getElementById('agentEmpId').value.trim();
+    const workEmail = document.getElementById('agentWorkEmail').value.trim();
+    const gqAHT     = parseInt(document.getElementById('currentGQAHT').value);
+    const resAHT    = parseInt(document.getElementById('currentResAHT').value);
+    const conv      = parseInt(document.getElementById('conversionRate').value);
+    const qual      = parseInt(document.getElementById('qualityScore').value);
+    const prep      = parseInt(document.getElementById('prepaidRate').value);
+    const pay       = parseInt(document.getElementById('payLaterRate').value);
+    if(!name||!empId||!workEmail||!gqAHT||!resAHT||!conv||!qual||!prep||!pay){
+        alert('Please fill in all fields including Employee ID, both AHT values, and the work email address.');return;
+    }
+    if(agents.find(a=>a.empId===empId)){
+        alert(`Employee ID "${empId}" already exists. Please use a unique Employee ID.`);return;
+    }
+    agents.push({
+        id:Date.now(), name, empId, workEmail,
+        gqAHT, resAHT, conversionRate:conv, qualityScore:qual,
+        prepaidRate:prep, payLaterRate:pay,
+        dateAdded:new Date().toISOString(), weeklyData:{}, coachingSessions:[]
+    });
+    save();clearAgentForm();renderAgentList();refreshAllSelectors();updateDashboard();
+    alert(`✅ Agent "${name}" (ID: ${empId}) added successfully!`);
+}
+function clearAgentForm(){
+    ['agentName','agentEmpId','agentWorkEmail','currentGQAHT','currentResAHT',
+     'conversionRate','qualityScore','prepaidRate','payLaterRate']
+        .forEach(id=>document.getElementById(id).value='');
+}
+
+// ── Render Agent List (WITH EMPLOYEE ID + SEARCH) ─────────────────────────────
+function renderAgentList(){
+    const el = document.getElementById('agentList');
+    const searchEl = document.getElementById('trackerSearch');
+    const q = searchEl ? searchEl.value.toLowerCase() : '';
+    let filtered = agents;
+    if(q) filtered = agents.filter(a=>
+        a.name.toLowerCase().includes(q) ||
+        (a.empId||'').toLowerCase().includes(q)
+    );
+    if(!filtered.length){
+        el.innerHTML = q
+            ? `<div class="empty-state">No agents found matching "<strong>${q}</strong>".</div>`
+            : '<div class="empty-state">No agents added yet.</div>';
+        return;
+    }
+    let h=`<div class="tbl-wrap"><table class="tbl"><thead><tr>
+        <th>🪪 Employee ID</th><th>Name</th><th>Work Email</th>
+        <th>📞 GQ AHT</th><th>GQ Status</th>
+        <th>📋 Res AHT</th><th>Res Status</th>
+        <th>Conv%</th><th>Qual%</th><th>Prepaid%</th><th>Pay Later%</th><th>Action</th>
+    </tr></thead><tbody>`;
+    filtered.forEach(a=>{
+        h+=`<tr>
+            <td><span class="empid-badge">${a.empId||'—'}</span></td>
+            <td><strong>${a.name}</strong></td>
+            <td style="font-size:11px;color:#555;">${a.workEmail||'—'}</td>
+            <td><input type="number" value="${a.gqAHT}" onchange="updateMetric(${a.id},'gqAHT',this.value)" class="tbl-input" style="border-color:#1565C0;"></td>
+            <td><span class="${gqBC(a.gqAHT)}">${gqStatus(a.gqAHT)}</span></td>
+            <td><input type="number" value="${a.resAHT}" onchange="updateMetric(${a.id},'resAHT',this.value)" class="tbl-input" style="border-color:#6A1B9A;"></td>
+            <td><span class="${resBC(a.resAHT)}">${resStatus(a.resAHT)}</span></td>
+            <td><input type="number" value="${a.conversionRate}" onchange="updateMetric(${a.id},'conversionRate',this.value)" class="tbl-input"></td>
+            <td><input type="number" value="${a.qualityScore}" onchange="updateMetric(${a.id},'qualityScore',this.value)" class="tbl-input"></td>
+            <td><input type="number" value="${a.prepaidRate}" onchange="updateMetric(${a.id},'prepaidRate',this.value)" class="tbl-input"></td>
+            <td><input type="number" value="${a.payLaterRate}" onchange="updateMetric(${a.id},'payLaterRate',this.value)" class="tbl-input"></td>
+            <td><button class="del-btn" onclick="deleteAgent(${a.id})">Delete</button></td>
+        </tr>`;
+    });
+    h+='</tbody></table></div>';
+    el.innerHTML=h;
+}
+function updateMetric(id,field,val){const a=agents.find(x=>x.id===id);if(!a)return;a[field]=parseInt(val)||0;save();renderAgentList();updateDashboard();if(selCoachingAgentId===id)loadAgentForCoaching();}
+function deleteAgent(id){if(!confirm('Delete this agent and all their data?'))return;agents=agents.filter(a=>a.id!==id);save();renderAgentList();refreshAllSelectors();updateDashboard();}
+
+// ── Selectors (SHOW EMPLOYEE ID IN DROPDOWN) ──────────────────────────────────
+function refreshAllSelectors(){
+    ['agentSelector','coachingAgentSelector'].forEach(sid=>{
+        const sel=document.getElementById(sid);if(!sel)return;
+        const cur=sel.value;
+        sel.innerHTML='<option value="">— Select an Agent —</option>';
+        agents.forEach(a=>{
+            const o=document.createElement('option');
+            o.value=a.id;
+            o.textContent=`${a.name}${a.empId?' ['+a.empId+']':''}`;
+            sel.appendChild(o);
+        });
+        sel.value=cur;
+    });
+    populateAckAgentFilter();
+}
+function refreshCoachingSelector(){
+    const sel=document.getElementById('coachingAgentSelector');if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">— Select an Agent —</option>';
+    agents.forEach(a=>{
+        const o=document.createElement('option');
+        o.value=a.id;
+        o.textContent=`${a.name}${a.empId?' ['+a.empId+']':''}`;
+        sel.appendChild(o);
+    });
+    sel.value=cur;
+}
+function populateAckAgentFilter(){
+    const sel=document.getElementById('ackFilterAgent');if(!sel)return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">All Agents</option>';
+    agents.forEach(a=>{
+        const o=document.createElement('option');
+        o.value=a.id;
+        o.textContent=`${a.name}${a.empId?' ['+a.empId+']':''}`;
+        sel.appendChild(o);
+    });
+    sel.value=cur;
+}
+
+// ── Dashboard (WITH EMPLOYEE ID + SEARCH) ─────────────────────────────────────
+function updateDashboard(){
+    const n=agents.length;
+    if(!n){
+        ['dashGQAHT','dashResAHT','dashConv','dashQual'].forEach(id=>document.getElementById(id).textContent='—');
+        ['dashNotSent','dashSent','dashAcked'].forEach(id=>document.getElementById(id).textContent='0');
+        document.getElementById('agentOverview').innerHTML='<div class="empty-state">No agents added yet. Go to <strong>Coaching Tracker</strong> to add agents.</div>';
+        return;
+    }
+    const avg=f=>Math.round(agents.reduce((s,a)=>s+(a[f]||0),0)/n);
+    document.getElementById('dashGQAHT').textContent=avg('gqAHT');
+    document.getElementById('dashResAHT').textContent=avg('resAHT');
+    document.getElementById('dashConv').textContent=avg('conversionRate')+'%';
+    document.getElementById('dashQual').textContent=avg('qualityScore')+'%';
+    let ns=0,s=0,ak=0;
+    agents.forEach(a=>(a.coachingSessions||[]).forEach(cs=>{const ds=cs.docStatus||'not-sent';if(ds==='not-sent')ns++;else if(ds==='sent')s++;else ak++;}));
+    document.getElementById('dashNotSent').textContent=ns;
+    document.getElementById('dashSent').textContent=s;
+    document.getElementById('dashAcked').textContent=ak;
+
+    const searchEl=document.getElementById('dashSearch');
+    const q=searchEl?searchEl.value.toLowerCase():'';
+    let filtered=agents;
+    if(q) filtered=agents.filter(a=>a.name.toLowerCase().includes(q)||(a.empId||'').toLowerCase().includes(q));
+
+    if(!filtered.length){
+        document.getElementById('agentOverview').innerHTML=`<div class="empty-state">No agents found matching "<strong>${q}</strong>".</div>`;
+        return;
+    }
+
+    let h=`<div class="tbl-wrap"><table class="tbl"><thead><tr>
+        <th>🪪 Employee ID</th><th>Agent</th><th>Work Email</th>
+        <th>📞 GQ AHT</th><th>GQ Status</th>
+        <th>📋 Res AHT</th><th>Res Status</th>
+        <th>Conv%</th><th>Qual%</th>
+        <th>GQ Progress</th><th>Res Progress</th>
+    </tr></thead><tbody>`;
+    filtered.forEach(a=>{
+        const gqP=Math.max(0,Math.min(100,Math.round(((300-a.gqAHT)/5)*100)));
+        const resP=Math.max(0,Math.min(100,Math.round(((420-a.resAHT)/80)*100)));
+        h+=`<tr>
+            <td><span class="empid-badge">${a.empId||'—'}</span></td>
+            <td><strong>${a.name}</strong></td>
+            <td style="font-size:11px;color:#555;">${a.workEmail||'—'}</td>
+            <td><strong>${a.gqAHT}s</strong></td>
+            <td><span class="${gqBC(a.gqAHT)}">${gqStatus(a.gqAHT)}</span></td>
+            <td><strong>${a.resAHT}s</strong></td>
+            <td><span class="${resBC(a.resAHT)}">${resStatus(a.resAHT)}</span></td>
+            <td>${a.conversionRate}%</td><td>${a.qualityScore}%</td>
+            <td><div class="prog"><div class="prog-fill prog-blue" style="width:${gqP}%">${gqP}%</div></div></td>
+            <td><div class="prog"><div class="prog-fill prog-violet" style="width:${resP}%">${resP}%</div></div></td>
+        </tr>`;
+    });
+    h+='</tbody></table></div>';
+    document.getElementById('agentOverview').innerHTML=h;
+}
+
+// ── Load Agent for Coaching (WITH EMPLOYEE ID) ────────────────────────────────
+function loadAgentForCoaching(){
+    const id=parseInt(document.getElementById('coachingAgentSelector').value);
+    if(!id){document.getElementById('agentStatsDisplay').style.display='none';document.getElementById('coachingSessionsSection').style.display='none';return;}
+    selCoachingAgentId=id;
+    const a=agents.find(x=>x.id===id);if(!a)return;
+    document.getElementById('agentStatsDisplay').style.display='block';
+    document.getElementById('coachingAgentName').textContent=a.name;
+    document.getElementById('coachingAgentEmpId').innerHTML=a.empId?`<span class="empid-badge">${a.empId}</span>`:'';
+    document.getElementById('statEmpId').textContent=a.empId||'—';
+    document.getElementById('statGQAHT').textContent=a.gqAHT;
+    document.getElementById('statResAHT').textContent=a.resAHT;
+    document.getElementById('statConversion').textContent=a.conversionRate;
+    document.getElementById('statQuality').textContent=a.qualityScore;
+    document.getElementById('statPrepaid').textContent=a.prepaidRate;
+    document.getElementById('statPayLater').textContent=a.payLaterRate;
+    document.getElementById('statGQBadge').innerHTML=`<span class="${gqBC(a.gqAHT)}">${gqStatus(a.gqAHT)}</span>`;
+    document.getElementById('statResBadge').innerHTML=`<span class="${resBC(a.resAHT)}">${resStatus(a.resAHT)}</span>`;
+    renderCoachingSessions();renderWeeklyProgress();
+    document.getElementById('coachingSessionsSection').style.display='block';
+}
+
+// ── New Session Modal ─────────────────────────────────────────────────────────
+function openNewSessionModal(){
+    if(!selCoachingAgentId){alert('Please select an agent first.');return;}
+    const a=agents.find(x=>x.id===selCoachingAgentId);if(!a)return;
+    document.getElementById('sessionDate').value=new Date().toISOString().split('T')[0];
+    document.getElementById('sessionGQAHT').value=a.gqAHT;
+    document.getElementById('sessionResAHT').value=a.resAHT;
+    document.getElementById('sessionConversion').value=a.conversionRate;
+    document.getElementById('sessionQuality').value=a.qualityScore;
+    document.getElementById('sessionPrepaid').value=a.prepaidRate;
+    document.getElementById('sessionPayLater').value=a.payLaterRate;
+    document.getElementById('agentEmail').value=a.workEmail||'';
+    document.getElementById('leaderEmail').value='';
+    openModal('newSessionModal');
+}
+
+// ── Save Coaching Session ─────────────────────────────────────────────────────
+function saveCoachingSession(){
+    if(!selCoachingAgentId)return;
+    const a=agents.find(x=>x.id===selCoachingAgentId);if(!a)return;
+    const sessionDate=document.getElementById('sessionDate').value;
+    const specific=document.getElementById('goalSpecific').value.trim();
+    const measurable=document.getElementById('goalMeasurable').value.trim();
+    const deadline=document.getElementById('goalDeadline').value;
+    const agentEmail=document.getElementById('agentEmail').value.trim();
+    if(!sessionDate||!specific||!measurable||!deadline){alert('Please fill in: Session Date, Specific, Measurable, and Deadline.');return;}
+    if(!agentEmail){alert('Agent work email is required.');return;}
+    if(agentEmail!==a.workEmail) a.workEmail=agentEmail;
+    const session={
+        id:Date.now(),date:sessionDate,
+        type:document.getElementById('sessionType').value,
+        focusArea:document.getElementById('focusArea').value,
+        smartGoal:{specific,measurable,achievable:document.getElementById('goalAchievable').value,relevant:document.getElementById('goalRelevant').value,deadline},
+        notes:document.getElementById('sessionNotes').value,
+        status:document.getElementById('goalStatus').value,
+        metrics:{gqAHT:parseInt(document.getElementById('sessionGQAHT').value)||a.gqAHT,resAHT:parseInt(document.getElementById('sessionResAHT').value)||a.resAHT,conversion:parseInt(document.getElementById('sessionConversion').value)||a.conversionRate,quality:parseInt(document.getElementById('sessionQuality').value)||a.qualityScore,prepaid:parseInt(document.getElementById('sessionPrepaid').value)||a.prepaidRate,payLater:parseInt(document.getElementById('sessionPayLater').value)||a.payLaterRate},
+        leaderEmail:document.getElementById('leaderEmail').value.trim(),
+        agentEmail,docStatus:'not-sent',sentAt:null,acknowledgedAt:null,acknowledgedBy:null,ackComments:null,createdAt:new Date().toISOString()
+    };
+    if(!a.coachingSessions)a.coachingSessions=[];
+    a.coachingSessions.push(session);
+    save();closeModal('newSessionModal');
+    ['goalSpecific','goalMeasurable','goalAchievable','goalRelevant','goalDeadline','sessionNotes','leaderEmail'].forEach(id=>document.getElementById(id).value='');
+    renderCoachingSessions();renderWeeklyProgress();updateDashboard();updatePendingDot();
+    alert('✅ Session saved! Click "📧 Prepare & Send Email" on the session card to send it to the agent.');
+}
+
+// ── Build Email Body (WITH EMPLOYEE ID) ───────────────────────────────────────
+function buildEmailBody(a,s,note){
+    return `Dear ${a.name},
+
+I hope this message finds you well.
+
+Please find below your official coaching document from our session on ${new Date(s.date).toLocaleDateString()}.
+
+================================================
+  SESSION DETAILS
+================================================
+  Agent Name   : ${a.name}
+  Employee ID  : ${a.empId||'N/A'}
+  Session Type : ${s.type}
+  Focus Area   : ${s.focusArea}
+  Date         : ${new Date(s.date).toLocaleDateString()}
+  Goal Status  : ${s.status}
+
+================================================
+  YOUR SMART GOAL
+================================================
+  S (Specific)   : ${s.smartGoal.specific}
+  M (Measurable) : ${s.smartGoal.measurable}
+  A (Achievable) : ${s.smartGoal.achievable||'N/A'}
+  R (Relevant)   : ${s.smartGoal.relevant||'N/A'}
+  T (Time-bound) : ${new Date(s.smartGoal.deadline).toLocaleDateString()}
+
+================================================
+  PERFORMANCE METRICS AT SESSION
+================================================
+  General Questions AHT : ${s.metrics.gqAHT} seconds (${gqStatus(s.metrics.gqAHT)})
+  - Target: 295s | Acceptable: up to 300s | Critical: 301+s
+
+  Reservations AHT      : ${s.metrics.resAHT} seconds (${resStatus(s.metrics.resAHT)})
+  - Target: 340s | Acceptable: up to 370s | Critical: 421+s
+
+  Conversion Rate       : ${s.metrics.conversion}%
+  Quality Score         : ${s.metrics.quality}%
+  Prepaid Rate          : ${s.metrics.prepaid}%
+  Pay Later Rate        : ${s.metrics.payLater}%
+${s.notes?`
+================================================
+  COACHING NOTES
+================================================
+  ${s.notes}
+`:''}${note?`
+================================================
+  PERSONAL NOTE FROM YOUR LEADER
+================================================
+  ${note}
+`:''}
+================================================
+  ACTION REQUIRED - ACKNOWLEDGEMENT
+================================================
+  Please acknowledge receipt of this coaching document
+  by logging into the EMCT tool, going to the
+  Acknowledgements tab, and clicking Acknowledge Receipt.
+
+  Your acknowledgement confirms that you have:
+  - Received this coaching document
+  - Read and understood the SMART goals and feedback
+  - Agreed to work towards the stated improvement targets
+
+Best regards,
+Team Leader | TELUS Digital - Europcar FOX`;
+}
+
+// ── Email Modal ───────────────────────────────────────────────────────────────
+function openEmailModal(agentId,sessionId){
+    const a=agents.find(x=>x.id===agentId);if(!a)return;
+    const s=a.coachingSessions.find(x=>x.id===sessionId);if(!s)return;
+    pendingEmailAgentId=agentId;pendingEmailSessionId=sessionId;
+    document.getElementById('previewFrom').textContent=s.leaderEmail||'(your email)';
+    document.getElementById('previewTo').textContent=s.agentEmail||a.workEmail||'—';
+    document.getElementById('previewSubject').textContent=`Coaching Document - ${a.empId?'['+a.empId+'] ':''}${s.focusArea} | ${new Date(s.date).toLocaleDateString()}`;
+    document.getElementById('additionalNote').value='';
+    document.getElementById('copyBanner').classList.remove('show');
+    document.getElementById('previewBody').textContent=buildEmailBody(a,s,'');
+    openModal('emailModal');
+}
+function refreshBodyPreview(){
+    if(!pendingEmailAgentId||!pendingEmailSessionId)return;
+    const a=agents.find(x=>x.id===pendingEmailAgentId);if(!a)return;
+    const s=a.coachingSessions.find(x=>x.id===pendingEmailSessionId);if(!s)return;
+    document.getElementById('previewBody').textContent=buildEmailBody(a,s,document.getElementById('additionalNote').value.trim());
+}
+function copyEmailBody(){
+    const a=agents.find(x=>x.id===pendingEmailAgentId);if(!a)return;
+    const s=a.coachingSessions.find(x=>x.id===pendingEmailSessionId);if(!s)return;
+    const body=buildEmailBody(a,s,document.getElementById('additionalNote').value.trim());
+    const showBanner=()=>{
+        const b=document.getElementById('copyBanner');
+        b.classList.add('show');
+        setTimeout(()=>b.classList.remove('show'),5000);
+    };
+    navigator.clipboard.writeText(body).then(showBanner).catch(()=>{
+        const ta=document.createElement('textarea');
+        ta.value=body;ta.style.cssText='position:fixed;opacity:0;top:0;left:0;';
+        document.body.appendChild(ta);ta.select();
+        document.execCommand('copy');document.body.removeChild(ta);
+        showBanner();
+    });
+}
+function openEmailClientOnly(){
+    const a=agents.find(x=>x.id===pendingEmailAgentId);if(!a)return;
+    const s=a.coachingSessions.find(x=>x.id===pendingEmailSessionId);if(!s)return;
+    const to=s.agentEmail||a.workEmail||'';
+    if(!to){alert('No agent email address found. Please update the agent work email in Coaching Tracker.');return;}
+    const subject=`Coaching Document - ${a.empId?'['+a.empId+'] ':''}${s.focusArea} | ${new Date(s.date).toLocaleDateString()}`;
+    window.location.href=`mailto:${encodeURIComponent(to)}?subject=${encodeURIComponent(subject)}`;
+}
+function markAsSent(){
+    const a=agents.find(x=>x.id===pendingEmailAgentId);if(!a)return;
+    const s=a.coachingSessions.find(x=>x.id===pendingEmailSessionId);if(!s)return;
+    const to=s.agentEmail||a.workEmail||'the agent';
+    if(!confirm(`Confirm that you have sent the coaching document to ${to}?`))return;
+    s.docStatus='sent';s.sentAt=new Date().toISOString();
+    save();closeModal('emailModal');
+    renderCoachingSessions();updateDashboard();updatePendingDot();renderAckTab();
+    alert(`✅ Session marked as Sent!\n\nTo: ${to}\nSent at: ${new Date(s.sentAt).toLocaleString()}\n\nThe agent can now acknowledge receipt in the Acknowledgements tab.`);
+}
+
+// ── Render Coaching Sessions (WITH EMPLOYEE ID) ───────────────────────────────
+function renderCoachingSessions(){
+    if(!selCoachingAgentId)return;
+    const a=agents.find(x=>x.id===selCoachingAgentId);
+    const el=document.getElementById('coachingSessionsList');
+    if(!a||!a.coachingSessions||!a.coachingSessions.length){
+        el.innerHTML='<div class="empty-state">No coaching sessions logged yet.</div>';return;
+    }
+    const sessions=[...a.coachingSessions].sort((x,y)=>new Date(y.date)-new Date(x.date));
+    let html='<div class="timeline">';
+    sessions.forEach((s,idx)=>{
+        const sDate=new Date(s.date).toLocaleDateString();
+        const dDate=new Date(s.smartGoal.deadline).toLocaleDateString();
+        const ds=s.docStatus||'not-sent';
+
+        let improvement='';
+        if(idx<sessions.length-1){
+            const prev=sessions[idx+1];
+            const gqC=(prev.metrics.gqAHT||0)-(s.metrics.gqAHT||0);
+            const resC=(prev.metrics.resAHT||0)-(s.metrics.resAHT||0);
+            const cc=(s.metrics.conversion||0)-(prev.metrics.conversion||0);
+            const qc=(s.metrics.quality||0)-(prev.metrics.quality||0);
+            improvement=`<div class="compare">
+                <strong style="font-size:12px;color:#4B0082;">📊 Progress Since Last Session:</strong>
+                <div class="cmp-row"><span class="c-lbl">📞 GQ AHT:</span><span class="${gqC>0?'c-up':gqC<0?'c-dn':'c-eq'}">${gqC>0?'↓ Improved by '+Math.abs(gqC)+'s':gqC<0?'↑ Increased by '+Math.abs(gqC)+'s':'→ No change'}</span></div>
+                <div class="cmp-row"><span class="c-lbl">📋 Res AHT:</span><span class="${resC>0?'c-up':resC<0?'c-dn':'c-eq'}">${resC>0?'↓ Improved by '+Math.abs(resC)+'s':resC<0?'↑ Increased by '+Math.abs(resC)+'s':'→ No change'}</span></div>
+                <div class="cmp-row"><span class="c-lbl">Conversion:</span><span class="${cc>0?'c-up':cc<0?'c-dn':'c-eq'}">${cc>0?'↑ +'+Math.abs(cc)+'%':cc<0?'↓ -'+Math.abs(cc)+'%':'→ No change'}</span></div>
+                <div class="cmp-row"><span class="c-lbl">Quality:</span><span class="${qc>0?'c-up':qc<0?'c-dn':'c-eq'}">${qc>0?'↑ +'+Math.abs(qc)+'%':qc<0?'↓ -'+Math.abs(qc)+'%':'→ No change'}</span></div>
+            </div>`;
+        }
+
+        let trail='';
+        if(ds==='sent'||ds==='acknowledged'){
+            trail+=`<span class="trail-item">📤 Sent: ${new Date(s.sentAt).toLocaleString()} → <strong>${s.agentEmail}</strong></span>`;
+        }
+        if(ds==='acknowledged'){
+            trail+=`<span class="trail-item">✅ Acknowledged by <strong>${s.acknowledgedBy}</strong> on ${new Date(s.acknowledgedAt).toLocaleString()}</span>`;
+            if(s.ackComments) trail+=`<span class="trail-item">💬 Agent comment: "${s.ackComments}"</span>`;
+        }
+
+        let actionBtns='';
+        if(ds==='not-sent'){
+            actionBtns=`<button class="btn btn-success btn-sm" onclick="openEmailModal(${a.id},${s.id})">📧 Prepare &amp; Send Email</button>`;
+        } else if(ds==='sent'){
+            actionBtns=`
+                <button class="btn btn-warning btn-sm" onclick="openEmailModal(${a.id},${s.id})">📧 Resend Email</button>
+                <button class="btn btn-info btn-sm" onclick="openAcknowledgeModal(${a.id},${s.id})">✅ Acknowledge Receipt</button>`;
+        } else {
+            actionBtns=`
+                <button class="btn btn-secondary btn-sm" onclick="openEmailModal(${a.id},${s.id})">📧 Resend Email</button>
+                <span style="color:#27ae60;font-weight:700;font-size:12px;">✅ Fully Acknowledged</span>`;
+        }
+
+        html+=`<div class="tl-item">
+            <div class="session-card">
+                <div class="session-hdr">
+                    <div>
+                        <strong style="color:#4B0082;font-size:14px;">${s.type}</strong>
+                        <div style="font-size:11px;color:#777;margin-top:3px;">
+                            📅 ${sDate} &nbsp;|&nbsp; 🎯 ${s.focusArea}
+                            ${a.empId?`&nbsp;|&nbsp; 🪪 <span class="empid-badge">${a.empId}</span>`:''}
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;">
+                        <span class="${goalBC(s.status)}">${s.status}</span>
+                        <span class="${docBC(ds)}">📄 ${docLabel(ds)}</span>
+                    </div>
+                </div>
+                <div class="box box-smart" style="padding:10px 12px;font-size:12px;">
+                    <strong>S:</strong> ${s.smartGoal.specific}<br>
+                    <strong>M:</strong> ${s.smartGoal.measurable}<br>
+                    <strong>A:</strong> ${s.smartGoal.achievable||'—'} &nbsp;&nbsp; <strong>R:</strong> ${s.smartGoal.relevant||'—'}<br>
+                    <strong>T:</strong> Target Date: <strong>${dDate}</strong>
+                </div>
+                ${s.notes?`<div class="coaching-note">📝 <strong>Notes:</strong> ${s.notes}</div>`:''}
+                <div class="metrics-strip">
+                    📞 <strong>GQ AHT:</strong> ${s.metrics.gqAHT}s
+                    <span class="${gqBC(s.metrics.gqAHT)}" style="margin-left:4px;">${gqStatus(s.metrics.gqAHT)}</span>
+                    &nbsp;|&nbsp;
+                    📋 <strong>Res AHT:</strong> ${s.metrics.resAHT}s
+                    <span class="${resBC(s.metrics.resAHT)}" style="margin-left:4px;">${resStatus(s.metrics.resAHT)}</span>
+                    &nbsp;|&nbsp; Conv: <strong>${s.metrics.conversion}%</strong>
+                    &nbsp;|&nbsp; Qual: <strong>${s.metrics.quality}%</strong>
+                    &nbsp;|&nbsp; Prepaid: <strong>${s.metrics.prepaid}%</strong>
+                </div>
+                ${improvement}
+                <div class="ack-panel">
+                    <h6>📧 Coaching Document Email Status</h6>
+                    <div style="font-size:11px;color:#555;margin-bottom:4px;">
+                        Agent: <strong>${a.name}</strong>
+                        ${a.empId?`&nbsp;|&nbsp; 🪪 <span class="empid-badge">${a.empId}</span>`:''}
+                        &nbsp;|&nbsp; Email: <strong>${s.agentEmail||a.workEmail||'—'}</strong>
+                    </div>
+                    <div class="ack-badge-row">
+                        <span class="${docBC(ds)}">${docLabel(ds)}</span>
+                        ${actionBtns}
+                    </div>
+                    ${trail?`<div class="ack-trail">${trail}</div>`:''}
+                </div>
+                <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                    <button class="del-btn" onclick="deleteSession(${s.id})">🗑 Delete Session</button>
+                    <button class="btn btn-secondary btn-sm" onclick="updateSessionStatus(${s.id})">✏️ Update Goal Status</button>
+                </div>
+            </div>
+        </div>`;
+    });
+    html+='</div>';
+    el.innerHTML=html;
+}
+
+// ── Delete / Update Session ───────────────────────────────────────────────────
+function deleteSession(sessionId){
+    if(!confirm('Delete this coaching session?'))return;
+    const a=agents.find(x=>x.id===selCoachingAgentId);if(!a)return;
+    a.coachingSessions=a.coachingSessions.filter(s=>s.id!==sessionId);
+    save();renderCoachingSessions();renderWeeklyProgress();updateDashboard();updatePendingDot();renderAckTab();
+}
+function updateSessionStatus(sessionId){
+    const a=agents.find(x=>x.id===selCoachingAgentId);if(!a)return;
+    const s=a.coachingSessions.find(x=>x.id===sessionId);if(!s)return;
+    const ns=prompt('Enter new status (In Progress / Completed / Pending):',s.status);
+    if(ns&&['In Progress','Completed','Pending'].includes(ns)){s.status=ns;save();renderCoachingSessions();}
+}
+
+// ── Weekly Progress ───────────────────────────────────────────────────────────
+function renderWeeklyProgress(){
+    if(!selCoachingAgentId)return;
+    const a=agents.find(x=>x.id===selCoachingAgentId);
+    const el=document.getElementById('weeklyProgressChart');
+    if(!a||!a.coachingSessions||!a.coachingSessions.length){
+        el.innerHTML='<div class="empty-state">Log coaching sessions to see weekly progress.</div>';return;
+    }
+    const byWeek={};
+    a.coachingSessions.forEach(s=>{
+        const d=new Date(s.date);
+        const wk=`${d.getFullYear()}-W${String(weekNum(d)).padStart(2,'0')}`;
+        if(!byWeek[wk])byWeek[wk]=[];
+        byWeek[wk].push(s);
+    });
+    let h=`<div class="tbl-wrap"><table class="tbl"><thead><tr>
+        <th>Week</th><th>Sessions</th><th>Focus Areas</th>
+        <th>Avg GQ AHT</th><th>Avg Res AHT</th>
+        <th>Avg Conv</th><th>Avg Qual</th>
+        <th>Goals Done</th><th>Docs Acked</th>
+    </tr></thead><tbody>`;
+    Object.keys(byWeek).sort().reverse().forEach(wk=>{
+        const ss=byWeek[wk];
+        const avgGQ=Math.round(ss.reduce((s,x)=>s+(x.metrics.gqAHT||0),0)/ss.length);
+        const avgRes=Math.round(ss.reduce((s,x)=>s+(x.metrics.resAHT||0),0)/ss.length);
+        const avgConv=Math.round(ss.reduce((s,x)=>s+(x.metrics.conversion||0),0)/ss.length);
+        const avgQual=Math.round(ss.reduce((s,x)=>s+(x.metrics.quality||0),0)/ss.length);
+        const areas=[...new Set(ss.map(x=>x.focusArea))].join(', ');
+        const done=ss.filter(x=>x.status==='Completed').length;
+        const acked=ss.filter(x=>(x.docStatus||'not-sent')==='acknowledged').length;
+        h+=`<tr>
+            <td><strong>${fmtWeek(wk)}</strong></td>
+            <td style="text-align:center;">${ss.length}</td>
+            <td style="font-size:11px;">${areas}</td>
+            <td><span class="${gqBC(avgGQ)}">${avgGQ}s</span></td>
+            <td><span class="${resBC(avgRes)}">${avgRes}s</span></td>
+            <td>${avgConv}%</td><td>${avgQual}%</td>
+            <td style="text-align:center;">${done}/${ss.length}</td>
+            <td style="text-align:center;">${acked}/${ss.length}</td>
+        </tr>`;
+    });
+    h+='</tbody></table></div>';
+    el.innerHTML=h;
+}
+
+// ── Acknowledge Modal (WITH EMPLOYEE ID) ──────────────────────────────────────
+function openAcknowledgeModal(agentId,sessionId){
+    const a=agents.find(x=>x.id===agentId);if(!a)return;
+    const s=a.coachingSessions.find(x=>x.id===sessionId);if(!s)return;
+    pendingAckAgentId=agentId;pendingAckSessionId=sessionId;
+    document.getElementById('ackNameInput').value='';
+    document.getElementById('ackCommentsInput').value='';
+    document.getElementById('ackDocPreview').innerHTML=`
+        <table style="width:100%;font-size:12px;border-collapse:collapse;">
+            <tr style="background:#f8f9fa;">
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;width:150px;">Agent:</td>
+                <td style="padding:7px 10px;">${a.name}</td>
+            </tr>
+            <tr>
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">🪪 Employee ID:</td>
+                <td style="padding:7px 10px;"><span class="empid-badge">${a.empId||'—'}</span></td>
+            </tr>
+            <tr style="background:#f8f9fa;">
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">Work Email:</td>
+                <td style="padding:7px 10px;">${a.workEmail||'—'}</td>
+            </tr>
+            <tr>
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">Session Date:</td>
+                <td style="padding:7px 10px;">${new Date(s.date).toLocaleDateString()}</td>
+            </tr>
+            <tr style="background:#f8f9fa;">
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">Session Type:</td>
+                <td style="padding:7px 10px;">${s.type}</td>
+            </tr>
+            <tr>
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">Focus Area:</td>
+                <td style="padding:7px 10px;">${s.focusArea}</td>
+            </tr>
+            <tr style="background:#f8f9fa;">
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">SMART Goal (S):</td>
+                <td style="padding:7px 10px;">${s.smartGoal.specific}</td>
+            </tr>
+            <tr>
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">SMART Goal (M):</td>
+                <td style="padding:7px 10px;">${s.smartGoal.measurable}</td>
+            </tr>
+            <tr style="background:#f8f9fa;">
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">Target Date:</td>
+                <td style="padding:7px 10px;">${new Date(s.smartGoal.deadline).toLocaleDateString()}</td>
+            </tr>
+            <tr>
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">📞 GQ AHT:</td>
+                <td style="padding:7px 10px;">${s.metrics.gqAHT}s &nbsp;<span class="${gqBC(s.metrics.gqAHT)}">${gqStatus(s.metrics.gqAHT)}</span></td>
+            </tr>
+            <tr style="background:#f8f9fa;">
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">📋 Res AHT:</td>
+                <td style="padding:7px 10px;">${s.metrics.resAHT}s &nbsp;<span class="${resBC(s.metrics.resAHT)}">${resStatus(s.metrics.resAHT)}</span></td>
+            </tr>
+            <tr>
+                <td style="padding:7px 10px;font-weight:700;color:#4B0082;">Sent At:</td>
+                <td style="padding:7px 10px;">${s.sentAt?new Date(s.sentAt).toLocaleString():'—'}</td>
+            </tr>
+        </table>`;
+    openModal('acknowledgeModal');
+}
+function confirmAcknowledgement(){
+    const name=document.getElementById('ackNameInput').value.trim();
+    if(!name){alert('Please type your full name to confirm acknowledgement.');return;}
+    const a=agents.find(x=>x.id===pendingAckAgentId);if(!a)return;
+    const s=a.coachingSessions.find(x=>x.id===pendingAckSessionId);if(!s)return;
+    s.docStatus='acknowledged';
+    s.acknowledgedAt=new Date().toISOString();
+    s.acknowledgedBy=name;
+    s.ackComments=document.getElementById('ackCommentsInput').value.trim();
+    save();closeModal('acknowledgeModal');
+    renderCoachingSessions();updateDashboard();updatePendingDot();renderAckTab();
+    alert(`✅ Acknowledgement recorded!\n\nAgent: ${name}${a.empId?' (ID: '+a.empId+')':''}\nDate: ${new Date().toLocaleString()}\n\nThank you for confirming receipt of your coaching document.`);
+}
+
+// ── Acknowledgements Tab (WITH EMPLOYEE ID + SEARCH) ──────────────────────────
+function renderAckTab(){
+    const filterAgentId=parseInt(document.getElementById('ackFilterAgent').value)||null;
+    const filterStatus=document.getElementById('ackFilterStatus').value;
+    const search=document.getElementById('ackSearch').value.toLowerCase();
+    let rows=[];
+    agents.forEach(a=>(a.coachingSessions||[]).forEach(s=>rows.push({a,s})));
+    if(filterAgentId) rows=rows.filter(r=>r.a.id===filterAgentId);
+    if(filterStatus)  rows=rows.filter(r=>(r.s.docStatus||'not-sent')===filterStatus);
+    if(search)        rows=rows.filter(r=>
+        r.a.name.toLowerCase().includes(search)||
+        (r.a.empId||'').toLowerCase().includes(search)||
+        r.s.focusArea.toLowerCase().includes(search)||
+        r.s.type.toLowerCase().includes(search)
+    );
+    const order={'sent':0,'not-sent':1,'acknowledged':2};
+    rows.sort((a,b)=>(order[a.s.docStatus||'not-sent']||1)-(order[b.s.docStatus||'not-sent']||1));
+    if(!rows.length){
+        document.getElementById('ackList').innerHTML='<div class="empty-state">No matching coaching sessions found.</div>';return;
+    }
+    let html='';
+    rows.forEach(({a,s})=>{
+        const ds=s.docStatus||'not-sent';
+        const sDate=new Date(s.date).toLocaleDateString();
+        const dDate=new Date(s.smartGoal.deadline).toLocaleDateString();
+        let trail='';
+        if(s.sentAt) trail+=`<br><small style="color:#555;">📤 Sent: ${new Date(s.sentAt).toLocaleString()} → <strong>${s.agentEmail}</strong></small>`;
+        if(s.acknowledgedAt) trail+=`<br><small style="color:#27ae60;font-weight:700;">✅ Acknowledged by ${s.acknowledgedBy} on ${new Date(s.acknowledgedAt).toLocaleString()}</small>`;
+        if(s.ackComments) trail+=`<br><small style="color:#666;">💬 "${s.ackComments}"</small>`;
+        let actionBtn='';
+        if(ds==='not-sent'){
+            actionBtn=`<button class="btn btn-success btn-sm" onclick="ackTabEmail(${a.id},${s.id})">📧 Prepare &amp; Send Email</button>`;
+        } else if(ds==='sent'){
+            actionBtn=`
+                <button class="btn btn-warning btn-sm" onclick="ackTabEmail(${a.id},${s.id})">📧 Resend Email</button>
+                <button class="btn btn-info btn-sm" onclick="ackTabAck(${a.id},${s.id})">✅ Acknowledge Receipt</button>`;
+        } else {
+            actionBtn=`<span style="color:#27ae60;font-weight:700;font-size:12px;">✅ Fully Acknowledged</span>`;
+        }
+        html+=`<div class="ack-card">
+            <div style="flex:1;min-width:200px;">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <strong style="color:#4B0082;font-size:14px;">${a.name}</strong>
+                    ${a.empId?`<span class="empid-badge">${a.empId}</span>`:''}
+                </div>
+                <div style="font-size:11px;color:#555;margin-top:3px;">📧 ${a.workEmail||'—'}</div>
+                <div style="font-size:11px;color:#777;margin-top:4px;">
+                    ${s.type} &nbsp;|&nbsp; ${s.focusArea} &nbsp;|&nbsp; 📅 ${sDate} &nbsp;|&nbsp; 🎯 Due: ${dDate}
+                </div>
+                <div style="margin-top:4px;">${trail}</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:8px;min-width:240px;">
+                <span class="${docBC(ds)}">${docLabel(ds)}</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;">${actionBtn}</div>
+            </div>
+        </div>`;
+    });
+    document.getElementById('ackList').innerHTML=html;
+}
+function ackTabEmail(agentId,sessionId){selCoachingAgentId=agentId;openEmailModal(agentId,sessionId);}
+function ackTabAck(agentId,sessionId){selCoachingAgentId=agentId;openAcknowledgeModal(agentId,sessionId);}
+
+// ── Pending Dot ───────────────────────────────────────────────────────────────
+function updatePendingDot(){
+    let count=0;
+    agents.forEach(a=>(a.coachingSessions||[]).forEach(s=>{if((s.docStatus||'not-sent')==='sent')count++;}));
+    document.getElementById('pendingDot').style.display=count>0?'inline-block':'none';
+}
+
+// ── Weekly Tracker (WITH EMPLOYEE ID) ─────────────────────────────────────────
+function loadAgentWeeklyData(){
+    const id=parseInt(document.getElementById('agentSelector').value);
+    if(!id){document.getElementById('weeklyTrackingSection').style.display='none';return;}
+    selAgentId=id;
+    const a=agents.find(x=>x.id===id);if(!a)return;
+    document.getElementById('weeklyTrackingSection').style.display='block';
+    document.getElementById('selectedAgentName').textContent=a.name;
+    const empIdEl=document.getElementById('selectedAgentEmpId');
+    empIdEl.innerHTML=a.empId?`<span class="empid-badge">${a.empId}</span>`:'';
+    document.getElementById('currentWeekDisplay').textContent=fmtWeek(currentWeek);
+    loadWeeklyDataForCurrentWeek();
+    renderPerformanceHistory();
+}
+function loadWeeklyDataForCurrentWeek(){
+    if(!selAgentId)return;
+    const a=agents.find(x=>x.id===selAgentId);if(!a)return;
+    const wd=(a.weeklyData||{})[currentWeek]||{
+        gqAHT:a.gqAHT,resAHT:a.resAHT,
+        conversion:a.conversionRate,quality:a.qualityScore,
+        prepaid:a.prepaidRate,payLater:a.payLaterRate,notes:''
+    };
+    document.getElementById('weeklyGQAHT').value=wd.gqAHT||'';
+    document.getElementById('weeklyResAHT').value=wd.resAHT||'';
+    document.getElementById('weeklyConversion').value=wd.conversion||'';
+    document.getElementById('weeklyQuality').value=wd.quality||'';
+    document.getElementById('weeklyPrepaid').value=wd.prepaid||'';
+    document.getElementById('weeklyPayLater').value=wd.payLater||'';
+    document.getElementById('weeklyNotes').value=wd.notes||'';
+    refreshWeeklyBadges(wd.gqAHT||a.gqAHT,wd.resAHT||a.resAHT);
+}
+function refreshWeeklyBadges(gq,res){
+    const gqS=gqStatus(gq),resS=resStatus(res);
+    const gqB=document.getElementById('weeklyGQStatus');gqB.textContent=gqS;gqB.className=gqBC(gq);
+    const resB=document.getElementById('weeklyResStatus');resB.textContent=resS;resB.className=resBC(res);
+    document.getElementById('gqStatusInline').innerHTML=`<span class="${gqBC(gq)}" style="font-size:10px;">${gqS}</span>`;
+    document.getElementById('resStatusInline').innerHTML=`<span class="${resBC(res)}" style="font-size:10px;">${resS}</span>`;
+}
+function saveWeeklyData(){
+    if(!selAgentId)return;
+    const a=agents.find(x=>x.id===selAgentId);if(!a)return;
+    const gqAHT=parseInt(document.getElementById('weeklyGQAHT').value)||0;
+    const resAHT=parseInt(document.getElementById('weeklyResAHT').value)||0;
+    const conv=parseInt(document.getElementById('weeklyConversion').value)||0;
+    const qual=parseInt(document.getElementById('weeklyQuality').value)||0;
+    const prep=parseInt(document.getElementById('weeklyPrepaid').value)||0;
+    const pay=parseInt(document.getElementById('weeklyPayLater').value)||0;
+    const notes=document.getElementById('weeklyNotes').value;
+    if(!a.weeklyData)a.weeklyData={};
+    a.weeklyData[currentWeek]={gqAHT,resAHT,conversion:conv,quality:qual,prepaid:prep,payLater:pay,notes,timestamp:new Date().toISOString()};
+    a.gqAHT=gqAHT;a.resAHT=resAHT;
+    a.conversionRate=conv;a.qualityScore=qual;
+    a.prepaidRate=prep;a.payLaterRate=pay;
+    save();renderAgentList();updateDashboard();
+    refreshWeeklyBadges(gqAHT,resAHT);
+    renderPerformanceHistory();
+    if(selCoachingAgentId===selAgentId)loadAgentForCoaching();
+}
+function renderPerformanceHistory(){
+    if(!selAgentId)return;
+    const a=agents.find(x=>x.id===selAgentId);
+    const el=document.getElementById('performanceHistory');
+    if(!a||!a.weeklyData||!Object.keys(a.weeklyData).length){
+        el.innerHTML='<div class="empty-state">No historical data yet.</div>';return;
+    }
+    let h=`<div class="tbl-wrap"><table class="tbl"><thead><tr>
+        <th>Week</th>
+        <th>📞 GQ AHT</th><th>GQ Status</th>
+        <th>📋 Res AHT</th><th>Res Status</th>
+        <th>Conv%</th><th>Qual%</th><th>Prepaid%</th><th>Pay Later%</th><th>Notes</th>
+    </tr></thead><tbody>`;
+    Object.keys(a.weeklyData).sort().reverse().forEach(wk=>{
+        const d=a.weeklyData[wk];
+        h+=`<tr>
+            <td><strong>${fmtWeek(wk)}</strong></td>
+            <td><strong>${d.gqAHT}s</strong></td>
+            <td><span class="${gqBC(d.gqAHT)}">${gqStatus(d.gqAHT)}</span></td>
+            <td><strong>${d.resAHT}s</strong></td>
+            <td><span class="${resBC(d.resAHT)}">${resStatus(d.resAHT)}</span></td>
+            <td>${d.conversion}%</td><td>${d.quality}%</td>
+            <td>${d.prepaid}%</td><td>${d.payLater}%</td>
+            <td style="font-size:11px;color:#555;">${d.notes||'—'}</td>
+        </tr>`;
+    });
+    h+='</tbody></table></div>';
+    el.innerHTML=h;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',()=>{
+    currentWeek=getThisWeekKey();
+    renderAgentList();
+    refreshAllSelectors();
+    updateDashboard();
+    updatePendingDot();
+});
+</script>
+</body>
+</html> 
